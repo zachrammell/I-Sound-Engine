@@ -1,5 +1,5 @@
-#include "../WavContainer.h"
-#include
+#include "WavContainer.h"
+
 
 int main()
 {

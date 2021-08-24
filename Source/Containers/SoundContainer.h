@@ -10,10 +10,17 @@
 #ifndef I_SOUND_ENGINE_SOUNDCONTAINER_H
 #define I_SOUND_ENGINE_SOUNDCONTAINER_H
 
+#include <cmath>
+
 template<typename sampleType>
 class SoundContainer
 {
 public:
+    /*!
+     * Ctor, init playbackModifier speed to 1 so sound plays at oringal speed
+     */
+    SoundContainer() : playbackModifier(static_cast<sampleType>(1)) {}
+
     /*!
      * Gets the next sample from current position based on play back speed
      * @return The next sample
@@ -34,13 +41,20 @@ public:
      *  <1.0 = Slower play back speed
      * @param modifier The new play back speed
      */
-    virtual void setPlayBackSpeed(sampleType modifier) = 0;
+    void setPlayBackSpeed(sampleType modifier)
+    {
+        playbackModifier = modifier;
+    }
 
     /*!
      * Adjust the original pitch by the given cents
      * @param cents Adjustment to original pitch
      */
-    virtual void setPitch(int cents)                   = 0;
+    void setPitch(int cents)
+    {
+        //TODO find method that doesnt use pow
+        playbackModifier = static_cast<sampleType>(std::pow(2, cents / 1200));
+    }
 
     /*!
      * Set the position to seek to
@@ -48,6 +62,12 @@ public:
      */
     virtual void Seek(int position)                    = 0;
     //virtural const storageType& GetAllSamples()      = 0;
+
+protected:
+    /*!
+     * The playback modifier to control speed of sound playback
+     */
+    dataType playbackModifier;
 };
 
 #endif //I_SOUND_ENGINE_SOUNDCONTAINER_H

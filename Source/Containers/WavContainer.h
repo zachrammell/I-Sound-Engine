@@ -13,6 +13,9 @@
 
 #include "SoundContainer.h"
 
+#include "opus.h"
+#include <opus.h>
+
 template<typename sampleType>
 class WavContainer : public SoundContainer<sampleType>
 {
@@ -30,16 +33,6 @@ public:
     sampleType GetSampleFromOffset(int offset)
     {
         return 0.0f;
-    }
-
-    void setPlayBackSpeed(sampleType modifier)
-    {
-
-    }
-
-    void setPitch(int cents)
-    {
-
     }
 
     void Seek(int position)
