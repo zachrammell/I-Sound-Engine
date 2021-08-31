@@ -12,6 +12,27 @@
 
 #include <cmath>
 
+// TODO find a proper location for sample
+/*!
+ * Left and right samples for given index
+ */
+template <typename sampleType>
+struct Frame
+{
+    sampleType leftChannel;  //! Sample for left channel
+    sampleType rightChannel; //! Sample for right Channel
+};
+
+// TODO find a proper location for channel type
+/*!
+ * The types of channels for a given sound
+ */
+enum ChannelType
+{
+  Mono = 1,
+  Stereo = 2
+};
+
 template<typename sampleType>
 class SoundContainer
 {
@@ -19,20 +40,21 @@ public:
     /*!
      * Ctor, init playbackModifier speed to 1 so sound plays at oringal speed
      */
-    SoundContainer() : playbackModifier(static_cast<sampleType>(1)) {}
+    SoundContainer() :
+                        playbackModifier(static_cast<sampleType>(1)) {}
 
     /*!
      * Gets the next sample from current position based on play back speed
      * @return The next sample
      */
-    virtual sampleType GetNextSample()                 = 0;
+    virtual Frame<sampleType> GetNextSample()                 = 0;
 
     /*!
      * Gets a sample from current position to offset based on play back speed
      * @param offset How far to move from current position
      * @return The sample at the position
      */
-    virtual sampleType GetSampleFromOffset(int offset) = 0;
+    virtual Frame<sampleType> GetSampleFromOffset(int offset) = 0;
 
     /*!
      * Sets the playback speed
@@ -53,7 +75,8 @@ public:
     void setPitch(int cents)
     {
         //TODO find method that doesnt use pow
-        playbackModifier = static_cast<sampleType>(std::pow(2, cents / 1200));
+        playbackModifier = static_cast<sampleType>(std::pow(static_cast<sampleType>(2),
+                                                            static_cast<sampleType>(cents) / 1200));
     }
 
     /*!
@@ -67,7 +90,7 @@ protected:
     /*!
      * The playback modifier to control speed of sound playback
      */
-    dataType playbackModifier;
+    sampleType playbackModifier;
 };
 
 #endif //I_SOUND_ENGINE_SOUNDCONTAINER_H

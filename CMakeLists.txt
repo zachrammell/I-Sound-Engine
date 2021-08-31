@@ -8,3 +8,5 @@ enable_testing()
 add_subdirectory(Source)
 add_subdirectory(Libraries)
 
+link_directories(Libraries/Opus)
+link_directories(Libraries/Opus/include)
