@@ -4,16 +4,13 @@
 
 #include <vector>
 #include <string>
+#include "../Containers/WavHeader.h" //fmt header
+#include "../ErrorList.h"
 
 // TODO make system to handle all errors
-enum ErrorNum
-{
-    NoErrors,
-    FailedToFindFile,
-    FailedToWriteFile
-};
 
-enum Format
+
+enum Encoding
 {
     PCM,
     Opus
@@ -26,9 +23,10 @@ public:
     //PackageEncoder();
 
     /*!
-     * Adds a new file to the bank
+     * Adds a new pcm(wav) file to the bank
      * @param path The filepath the audio file
      * @param id Id that events will refer to this audio file as
+     * @param format Wether file should be encoded to be in opus or pcm
      * @return Error
      */
      ErrorNum AddFile(std::string path, unsigned id, Format format);
@@ -42,7 +40,16 @@ public:
 
 private:
     unsigned bufferSize;
-    std::vector<std::tuple<unsigned, Format, std::string>> filePaths;
+
+    struct FileInfo
+    {
+        std::string path;
+        unsigned id;
+        Encoding encoding;
+        FormatHeader format;
+    };
+
+    std::vector<FileInfo> filePaths;
 };
 
 
