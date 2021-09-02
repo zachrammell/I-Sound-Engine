@@ -6,6 +6,7 @@
 #include <string>
 #include "../Containers/WavHeader.h" //fmt header
 #include "../ErrorList.h"
+#include "../Containers/WavHeader.h"
 
 // TODO make system to handle all errors
 
@@ -29,7 +30,7 @@ public:
      * @param format Wether file should be encoded to be in opus or pcm
      * @return Error
      */
-     ErrorNum AddFile(std::string path, unsigned id, Format format);
+     ErrorNum AddFile(std::string path, unsigned id, Encoding format);
 
      /*!
       * Generates the entire bank then writes it

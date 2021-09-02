@@ -17,7 +17,7 @@ public:
      * Ctor for wav object wrapper.
      * @param path Path to a wav file to use
      */
-    WavFile(std::string path);
+    explicit WavFile(const std::string& path);
 
     /*!
      * Checks returns wether wav file is valid or not
