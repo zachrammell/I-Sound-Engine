@@ -29,8 +29,8 @@ struct RiffHeader
  */
 struct FormatHeader
 {
-    char fmt_label[4]; // (12) = {'f','m','t',' '}
-    unsigned fmt_size; // (16) = 16
+    char label[4]; // (12) = {'f','m','t',' '}
+    unsigned size; // (16) = 16
     unsigned short audio_format; // (20) = 1
     unsigned short channel_count; // (22) = 1 or 2
     unsigned sampling_rate; // (24)

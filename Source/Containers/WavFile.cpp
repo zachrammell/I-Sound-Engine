@@ -5,6 +5,7 @@
 #include "WavFile.h"
 #include <fstream>
 
+
 WavFile::WavFile(const std::string& path) : errorState(ErrorNum::NoErrors),
                                      wavFile(path, std::ios_base::binary | std::ios_base::in),
                                      fmtHeader()
@@ -42,15 +43,14 @@ WavFile::WavFile(const std::string& path) : errorState(ErrorNum::NoErrors),
     }
 
     // Find Format Chunk
-    GenericHeaderChunk chunk {};
-    wavFile.read(reinterpret_cast<char*>(&chunk), sizeof(GenericHeaderChunk));
-    while(wavFile && (chunk.label[0] != 'f' ||
-                      chunk.label[1] != 'm' ||
-                      chunk.label[2] != 't' ||
-                      chunk.label[3] != ' ' ))
+    wavFile.read(reinterpret_cast<char*>(&fmtHeader), sizeof(GenericHeaderChunk));
+    while(wavFile && (fmtHeader.label[0] != 'f' ||
+                      fmtHeader.label[1] != 'm' ||
+                      fmtHeader.label[2] != 't' ||
+                      fmtHeader.label[3] != ' ' ))
     {
-        wavFile.seekg(chunk.chunkSize, std::ios_base::cur);
-        wavFile.read(reinterpret_cast<char*>(&chunk), sizeof(GenericHeaderChunk));
+        wavFile.seekg(fmtHeader.size, std::ios_base::cur);
+        wavFile.read(reinterpret_cast<char*>(&fmtHeader), sizeof(GenericHeaderChunk));
     }
     if(!wavFile)
     {
@@ -59,8 +59,8 @@ WavFile::WavFile(const std::string& path) : errorState(ErrorNum::NoErrors),
     }
 
     //Read fmt chunk and verify
-    wavFile.seekg(-sizeof(GenericHeaderChunk), std::ios_base::cur);
-    wavFile.read(reinterpret_cast<char*>(&fmtHeader), sizeof(fmtHeader));
+    wavFile.read(reinterpret_cast<char*>(&fmtHeader) + sizeof(GenericHeaderChunk),
+                 sizeof(FormatHeader) - sizeof(GenericHeaderChunk));
 
     if(fmtHeader.audio_format != 1)
     {
@@ -68,13 +68,14 @@ WavFile::WavFile(const std::string& path) : errorState(ErrorNum::NoErrors),
         return;
     }
 
-    if(fmtHeader.bytes_per_sample * 8 != fmtHeader.bits_per_sample)
-    {
-        errorState = ErrorNum::PossibleCorution;
-        return;
-    }
+//    if(fmtHeader.bytes_per_sample * 8 != fmtHeader.bits_per_sample)
+//    {
+//        errorState = ErrorNum::PossibleCorution;
+//        return;
+//    }
 
     // Find data Chunk
+    GenericHeaderChunk chunk;
     wavFile.read(reinterpret_cast<char*>(&chunk), sizeof(GenericHeaderChunk));
     while(wavFile && (chunk.label[0] != 'd' ||
                       chunk.label[1] != 'a' ||
@@ -107,16 +108,19 @@ const FormatHeader& WavFile::getFormat() const
     return fmtHeader;
 }
 
-template<typename sampleType>
-bool WavFile::GetDataInNativeType(std::unique_ptr<sampleType[]> buffer)
+unsigned WavFile::GetDataSize() const
+{
+    return dataSize;
+}
+
+bool WavFile::GetDataInNativeType(char* buffer)
 {
     wavFile.seekg(dataPosition, std::ios_base::beg);
-    wavFile.read(reinterpret_cast<char*>(buffer.get()), dataSize * sizeof(sampleType));
+    wavFile.read(buffer, dataSize);
     return true;
 }
 
-template<typename castedType>
-bool WavFile::GetDataInDecimal(std::unique_ptr<castedType[]> buffer)
+bool WavFile::GetDataAsFloat(float *buffer)
 {
     /* Idea
      * float - smallest decmal is atleast 4 bytes
@@ -125,34 +129,40 @@ bool WavFile::GetDataInDecimal(std::unique_ptr<castedType[]> buffer)
      * start to convert samples at the start
      */
                                 // buffer size                       native data size
-    unsigned readPointer  = ((sizeof(castedType) * dataSize) - (dataSize * fmtHeader.bytes_per_sample));  // in number of bytes
+    unsigned readPointer  = (sizeof(float) * dataSize) - (dataSize * (fmtHeader.bits_per_sample / 8));  // in number of bytes
     unsigned writePos     = 0; // first index
 
-    wavFile.seekg(dataPosition, std::ios_base::beg);
-    wavFile.read(reinterpret_cast<char*>(buffer.get()) + readPointer, dataSize * fmtHeader.bytes_per_sample);
+    GetDataInNativeType(reinterpret_cast<char*>(buffer) + readPointer);
+    //wavFile.read(reinterpret_cast<char*>(buffer) + readPointer, dataSize * fmtHeader.bytes_per_sample);
 
-    switch(fmtHeader.bytes_per_sample)
+    switch(fmtHeader.bits_per_sample)
     {
         // 8 bit conversion
-        case 1:
-            for(unsigned i = dataSize; --i >= 0;)
+        case 8:
+            for(unsigned i = 0; i < dataSize; ++i)
             {
-                buffer[writePos] = ((*reinterpret_cast<char*>(buffer.get() + readPointer))
-                                    - std::numeric_limits<char>::max()) /std::numeric_limits<unsigned char>::max();
+
+                float v = *(reinterpret_cast<unsigned char*>(buffer) + readPointer);
+                      v -= 128;
+                      v /= 128;
+                buffer[writePos] = v;/*((*(reinterpret_cast<char*>(buffer) + readPointer))
+                                    - std::numeric_limits<char>::max())
+                                    / std::numeric_limits<char>::max();*/
                 ++writePos;
                 ++readPointer;
             }
-            break;
+            return true;
         // 16 bit conversion
-        case 2:
+        case 16:
             for(unsigned i = dataSize; --i >= 0;)
             {
-                buffer[writePos] = (*reinterpret_cast<short*>(buffer.get()) + (readPointer / sizeof(short)))
-                                    / static_cast<castedType>(std::numeric_limits<short>::max());
+                buffer[writePos] = (*reinterpret_cast<short *>(buffer) + (readPointer / sizeof(short)))
+                                    / static_cast<float>(std::numeric_limits<short>::max());
 
                 ++writePos;
-                readPointer += sizeof(short);
+                ++readPointer;
             }
-            break;
+            return true;
     }
+    return false;
 }

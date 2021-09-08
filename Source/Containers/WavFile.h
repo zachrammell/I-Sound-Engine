@@ -38,22 +38,24 @@ public:
     const FormatHeader& getFormat() const;
 
     /*!
+     * gets the size of buffer needed to read audio data
+     * @return Total data size
+     */
+    unsigned GetDataSize() const;
+
+    /*!
      * Fills given buffer with data, make sure buffer is big enough to store all samples
-     * @tparam sampleType Check format chuck to get native type
      * @param buffer buffer to fill
      * @return true - read was successful
      */
-    template<typename sampleType>
-    bool GetDataInNativeType(std::unique_ptr<sampleType[]> buffer);
+    bool GetDataInNativeType(char* buffer);
 
     /*!
      * Fills buffer with samples in range [-1, 1]
-     * @tparam castedType Double or float
      * @param buffer buffer to be filled
      * @return true - read was successful
      */
-    template<typename castedType>
-    bool GetDataInDecimal(std::unique_ptr<castedType[]> buffer);
+    bool GetDataAsFloat(float* buffer);
 
 private:
     ErrorNum errorState;
