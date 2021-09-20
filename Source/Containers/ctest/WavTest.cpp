@@ -24,9 +24,11 @@ int main(int argc, char* argv[])
 
     // Get Converted data
     std::unique_ptr<float*> floatSamples = std::make_unique<float*>(new float[samples]);
-    wavFile.GetDataAsFloat(*floatSamples.get());
+    wavFile.GetDataAsFloat(*floatSamples);
 
-    std::unique_ptr<char*> data = std::make_unique<char*>(new char[wavFile.GetDataSize()]);
+    uint32_t dataSize = wavFile.GetDataSize();
+    char* someData = new char[dataSize]();
+    std::unique_ptr<char*> data = std::make_unique<char*>(someData);
     wavFile.GetDataInNativeType(*data.get());
 
     switch (wavFile.getFormat().bits_per_sample)

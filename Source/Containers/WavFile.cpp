@@ -154,7 +154,7 @@ bool WavFile::GetDataAsFloat(float *buffer)
             return true;
         // 16 bit conversion
         case 16:
-            for(unsigned i = dataSize; --i >= 0;)
+            for(int i = dataSize; --i >= 0;)
             {
                 buffer[writePos] = (*reinterpret_cast<short *>(buffer) + (readPointer / sizeof(short)))
                                     / static_cast<float>(std::numeric_limits<short>::max());
