@@ -35,7 +35,7 @@ public:
      * Get the format chunk of the wav file
      * @return Format chunk
      */
-    const FormatHeader& getFormat() const;
+    const FormatHeader& GetFormat() const;
 
     /*!
      * gets the size of buffer needed to read audio data

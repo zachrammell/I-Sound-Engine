@@ -102,7 +102,7 @@ ErrorNum WavFile::GetError() const
     return errorState;
 }
 
-const FormatHeader& WavFile::getFormat() const
+const FormatHeader& WavFile::GetFormat() const
 {
 
     return fmtHeader;
@@ -128,8 +128,11 @@ bool WavFile::GetDataAsFloat(float *buffer)
      * Read data samples into second half of the buffer then
      * start to convert samples at the start
      */
+
+    int numSamples = dataSize / (fmtHeader.bits_per_sample / 8);
+
                                 // buffer size                       native data size
-    unsigned readPointer  = (sizeof(float) * dataSize) - (dataSize * (fmtHeader.bits_per_sample / 8));  // in number of bytes
+    unsigned readPointer  = (sizeof(float) * numSamples) - (numSamples * (fmtHeader.bits_per_sample / 8));  // in number of bytes
     unsigned writePos     = 0; // first index
 
     GetDataInNativeType(reinterpret_cast<char*>(buffer) + readPointer);
@@ -154,13 +157,14 @@ bool WavFile::GetDataAsFloat(float *buffer)
             return true;
         // 16 bit conversion
         case 16:
-            for(int i = dataSize; --i >= 0;)
+            int loopSize = dataSize / (fmtHeader.bits_per_sample / 8);
+            for(unsigned i = 0; i < loopSize; ++i)
             {
-                buffer[writePos] = (*reinterpret_cast<short *>(buffer) + (readPointer / sizeof(short)))
+                buffer[writePos] = (*reinterpret_cast<short*>(reinterpret_cast<char *>(buffer) + (readPointer)))
                                     / static_cast<float>(std::numeric_limits<short>::max());
 
                 ++writePos;
-                ++readPointer;
+                readPointer += 2;
             }
             return true;
     }

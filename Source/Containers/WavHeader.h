@@ -39,5 +39,12 @@ struct FormatHeader
     unsigned short bits_per_sample; // (34) = 8 or 16
 };
 
+// Minimal header data req for wav file
+struct wavHeader
+{
+    RiffHeader riffHeader;
+    FormatHeader formatHeader;
+    GenericHeaderChunk dataHeader;
+};
 
 #endif //I_SOUND_ENGINE_WAVHEADER_H

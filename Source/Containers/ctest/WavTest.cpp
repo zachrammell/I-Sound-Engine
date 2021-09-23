@@ -1,6 +1,7 @@
 #include "../WavFile.h"
-#include <assert.h>
+#include <cassert>
 #include <iostream>
+#include <memory>
 
 int main(int argc, char* argv[])
 {
@@ -24,12 +25,14 @@ int main(int argc, char* argv[])
 
     // Get Converted data
     std::unique_ptr<float*> floatSamples = std::make_unique<float*>(new float[samples]);
+    uint32_t dataSize = samples * sizeof(float);
+
+    char* someData = new char[wavFile.GetDataSize()];
+    std::unique_ptr<char*> nativeSamples = std::make_unique<char*>(someData);
+
     wavFile.GetDataAsFloat(*floatSamples);
 
-    uint32_t dataSize = wavFile.GetDataSize();
-    char* someData = new char[dataSize]();
-    std::unique_ptr<char*> data = std::make_unique<char*>(someData);
-    wavFile.GetDataInNativeType(*data.get());
+    wavFile.GetDataInNativeType(*nativeSamples);
 
     switch (wavFile.getFormat().bits_per_sample)
     {
@@ -40,7 +43,7 @@ int main(int argc, char* argv[])
                 short fValue = (f * (127)) ;
                       fValue += (128);
 
-                unsigned char sampleValue = *((*data.get()) + i);
+                unsigned char sampleValue = *((*nativeSamples.get()) + i);
                 if(!(fValue >= sampleValue -1 && fValue <= sampleValue + 1))
                 {
                     assert(! " Float conversion failed");
@@ -48,6 +51,21 @@ int main(int argc, char* argv[])
                 }
             }
             break;
+        case 16:
+            for(int i = 0; i < samples; ++i)
+            {
+                float f = (*floatSamples)[i];
+                short fValue = f * ((1<<15) - 1);
+
+                short sampleValue = reinterpret_cast<short*>((*nativeSamples))[i];
+                if(!(fValue >= sampleValue -1 && fValue <= sampleValue + 1))
+                {
+                    assert(! " Float conversion failed");
+                    return  0;
+                }
+            }
+            break;
+
         default:
             assert(! "Unsupported file format");
             return 0;

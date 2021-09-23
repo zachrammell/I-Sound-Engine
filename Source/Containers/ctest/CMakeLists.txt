@@ -8,7 +8,7 @@ add_executable(WavOpen WavTest.cpp)
 target_link_libraries(WavOpen AudioFiles)
 
 add_test(Wac_Open_8_bits_Simple WavOpen ${CMAKE_CURRENT_SOURCE_DIR}/8_bit_simple.wav)
-add_test(Wac_Open_16_bits_Simple WavOpen ${CMAKE_CURRENT_SOURCE_DIR}/16_Bit_simple.wav)
+add_test(Wac_Open_16_bits_Simple WavOpen ${CMAKE_CURRENT_SOURCE_DIR}/16_bit_simple.wav)
 add_test(Wav_Open_8_bits_Reaper WavOpen ${CMAKE_CURRENT_SOURCE_DIR}/8_bit_reaper.wav)
 add_test(Wav_Open_16_bits_Reaper WavOpen ${CMAKE_CURRENT_SOURCE_DIR}/16_bit_reaper.wav)
 add_test(Wav_Open_24_bits_Reaper WavOpen ${CMAKE_CURRENT_SOURCE_DIR}/24_bit_reaper.wav)
