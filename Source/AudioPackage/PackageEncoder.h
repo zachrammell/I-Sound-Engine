@@ -4,9 +4,8 @@
 
 #include <vector>
 #include <string>
-#include "../Containers/WavHeader.h" //fmt header
+#include "../Containers/WavFile.h"
 #include "../ErrorList.h"
-#include "../Containers/WavHeader.h"
 
 // TODO make system to handle all errors
 
@@ -25,12 +24,12 @@ public:
 
     /*!
      * Adds a new pcm(wav) file to the bank
-     * @param path The filepath the audio file
+     * @param wav The wave file to encode
      * @param id Id that events will refer to this audio file as
      * @param format Wether file should be encoded to be in opus or pcm
      * @return Error
      */
-     ErrorNum AddFile(std::string path, unsigned id, Encoding format);
+     ErrorNum AddFile(WavFile& wav, uint32_t id, Encoding format);
 
      /*!
       * Generates the entire bank then writes it
@@ -44,13 +43,12 @@ private:
 
     struct FileInfo
     {
-        std::string path;
-        unsigned id;
+        WavFile& wavFile;
+        uint32_t id;
         Encoding encoding;
-        FormatHeader format;
     };
 
-    std::vector<FileInfo> filePaths;
+    std::vector<FileInfo> filesToEncode;
 };
 
 

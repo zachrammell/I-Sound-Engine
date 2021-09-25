@@ -58,6 +58,9 @@ public:
     bool GetDataAsFloat(float* buffer);
 
 private:
+
+    void ParseFormat();
+
     ErrorNum errorState;
     unsigned dataPosition;
     unsigned dataSize;

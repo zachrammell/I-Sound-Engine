@@ -40,7 +40,7 @@ struct FormatHeader
 };
 
 // Minimal header data req for wav file
-struct wavHeader
+struct WavHeader
 {
     RiffHeader riffHeader;
     FormatHeader formatHeader;

@@ -6,6 +6,9 @@ add_subdirectory(ctest)
 
 # PackageEncoder Target
 set(ENCODER_FILES PackageEncoder.cpp ../Containers/WavFile.h)
+set(DECODER_FILES PackageDecoder.h PackageDecoder.cpp)
+
+add_library(PackageDecoder INTERFACE ${DECODER_FILES})
 add_library(PackageEncoder ${ENCODER_FILES})
 target_link_libraries(PackageEncoder #[[opus]] AudioFiles)
 

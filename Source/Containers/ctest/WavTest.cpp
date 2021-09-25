@@ -21,7 +21,7 @@ int main(int argc, char* argv[])
     }
 
     // Conversion Test
-    int samples = wavFile.GetDataSize() / (wavFile.getFormat().bits_per_sample / 8);
+    int samples = wavFile.GetDataSize() / (wavFile.GetFormat().bits_per_sample / 8);
 
     // Get Converted data
     std::unique_ptr<float*> floatSamples = std::make_unique<float*>(new float[samples]);
@@ -34,7 +34,7 @@ int main(int argc, char* argv[])
 
     wavFile.GetDataInNativeType(*nativeSamples);
 
-    switch (wavFile.getFormat().bits_per_sample)
+    switch (wavFile.GetFormat().bits_per_sample)
     {
         case 8:
             for(int i = 0; i < samples; ++i)
