@@ -8,5 +8,5 @@ add_subdirectory(ctest)
 set(AUDIO_FILES WavFile.h WavFile.cpp WavHeader.h)
 add_library(AudioFiles ${AUDIO_FILES})
 #target_link_libraries(AudioFiles opus)
-target_link_libraries(AudioFiles ${CMAKE_SOURCE_DIR}/opus.lib)
-
+target_link_libraries(AudioFiles opus)
+target_include_directories(AudioFiles PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
