@@ -5,11 +5,10 @@
 #include <string>
 #include "WavFile.h"
 
-//Hidden message for remmy 2
-
 void readWaveFile(std::string name)
 {
     //Opening test
+    const char* path = name.c_str();
     WavFile wavFile(name);
     //if(!wavFile)
     ASSERT_FALSE(!wavFile) << "Failed to open file named ";
@@ -39,11 +38,7 @@ void readWaveFile(std::string name)
                 fValue += (128);
 
                 unsigned char sampleValue = *((*nativeSamples.get()) + i);
-                if(!(fValue >= sampleValue -1 && fValue <= sampleValue + 1))
-                {
-                    assert(! " Float conversion failed");
-                    return  0;
-                }
+                ASSERT_TRUE((fValue >= sampleValue -1 && fValue <= sampleValue + 1)) << "Float conversion failed";
             }
             break;
         case 16:
@@ -53,18 +48,14 @@ void readWaveFile(std::string name)
                 short fValue = f * ((1<<15) - 1);
 
                 short sampleValue = reinterpret_cast<short*>((*nativeSamples))[i];
-                if(!(fValue >= sampleValue -1 && fValue <= sampleValue + 1))
-                {
-                    assert(! " Float conversion failed");
-                    return  0;
-                }
+                ASSERT_TRUE((fValue >= sampleValue -1 && fValue <= sampleValue + 1)) << "Float conversion failed";
             }
             break;
 
         default:
-            assert(! "Unsupported file format");
-            return 0;
+            ASSERT_FALSE(true) << "Unsupported file format";
+            return;
     }
 
-    return 0;
+    return;
 }
