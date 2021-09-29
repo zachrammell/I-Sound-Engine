@@ -9,8 +9,8 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 enable_testing()
 
 
-add_subdirectory(Source)
 add_subdirectory(Libraries)
+add_subdirectory(Source)
 add_subdirectory(Testing)
 
 #link_directories(Libraries/Opus)

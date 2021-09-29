@@ -22,14 +22,10 @@ ErrorNum PackageEncoder::WritePackage(std::string path)
     if(!bank.is_open())
         return ErrorNum::FailedToWriteFile;
 
-    bufferSize += sizeof(uint32_t); // To store total size of buffer
-
-    bank.write(reinterpret_cast<char*>(bufferSize), sizeof(uint32_t));
+    bank.write(reinterpret_cast<char*>(&bufferSize), sizeof(uint32_t));
 
     char* buffer = new char[bufferSize];
     uint32_t offset = 0;
-
-
 
     // Store all data in bank
     for(auto& file : filesToEncode)
@@ -65,5 +61,8 @@ ErrorNum PackageEncoder::WritePackage(std::string path)
 
     bank.write(buffer, offset);
     bank.close();
+    delete [] buffer;
+
+
     return ErrorNum::NoErrors;
 }

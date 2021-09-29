@@ -4,17 +4,13 @@
 
 #include <vector>
 #include <string>
-#include "../Containers/WavFile.h"
+#include "../Parsers/WavFile.h"
 #include "../ErrorList.h"
-
+#include "../SoundData.h"
 // TODO make system to handle all errors
 
 
-enum Encoding
-{
-    PCM,
-    Opus
-};
+
 
 class PackageEncoder
 {
@@ -39,7 +35,7 @@ public:
      ErrorNum WritePackage(std::string path);
 
 private:
-    unsigned bufferSize;
+    unsigned bufferSize = 0;
 
     struct FileInfo
     {

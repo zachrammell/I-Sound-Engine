@@ -1,4 +1,8 @@
-add_executable(ISETests TestDriver.cpp Modules/ContainerModule.cpp)
+add_executable(ISETests TestDriver.cpp Modules/ContainerModule.cpp Modules/PackageModule.cpp)
+add_executable(ISEBenchmark BenchmakrDirver.cpp Modules/ContainerModule.cpp Modules/PackageModule.cpp)
 
-target_link_libraries(ISETests gtest benchmark::benchmark AudioFiles)
-target_include_directories(ISETests PUBLIC AudioFiles)
+target_link_libraries(ISETests gtest benchmark::benchmark AudioFiles PackageEncoder PackageDecoder)
+target_include_directories(ISETests PUBLIC AudioFiles PackageEncoder PackageDecoder)
+
+target_link_libraries(ISEBenchmark gtest benchmark::benchmark AudioFiles PackageEncoder PackageDecoder)
+target_include_directories(ISEBenchmark PUBLIC AudioFiles PackageEncoder PackageDecoder)

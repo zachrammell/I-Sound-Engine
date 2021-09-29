@@ -21,8 +21,7 @@ void readWaveFile(std::string name)
     std::unique_ptr<float*> floatSamples = std::make_unique<float*>(new float[samples]);
     uint32_t dataSize = samples * sizeof(float);
 
-    char* someData = new char[wavFile.GetDataSize()];
-    std::unique_ptr<char*> nativeSamples = std::make_unique<char*>(someData);
+    std::unique_ptr<char*> nativeSamples = std::make_unique<char*>(new char[wavFile.GetDataSize()]);
 
     wavFile.GetDataAsFloat(*floatSamples);
 

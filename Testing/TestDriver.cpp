@@ -5,6 +5,7 @@
 #include "gtest/gtest.h"
 //#include "Modules/ContainerModule.h"
 
+#include "PackageDecoder.h"
 int main(int argc, char** argv)
 {
     ::testing::InitGoogleTest(&argc, argv);
