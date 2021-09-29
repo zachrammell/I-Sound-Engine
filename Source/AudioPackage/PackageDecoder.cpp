@@ -5,6 +5,9 @@
 #include <fstream>
 #include "../Parsers/WavHeader.h"
 #include "PackageDecoder.h"
+#include <sys/mman.h>
+
+#include <fcntl.h>
 
 namespace PackageDecoder
 {
@@ -14,7 +17,7 @@ namespace PackageDecoder
         for(int offset = 0; offset < size;)
         {
             // Read the id
-            uint32_t id = *reinterpret_cast<uint32_t*>(data + offset);
+            uint32_t id = *reinterpret_cast<const uint32_t*>(data + offset);
             offset += sizeof(uint32_t);
 
             SoundData soundData;
@@ -91,18 +94,34 @@ namespace PackageDecoder
         uint32_t fileSize;
         file.read(reinterpret_cast<char*>(&fileSize), sizeof(uint32_t));
 
-        char* fileBuffer = new char[fileSize];
-        file.read(fileBuffer, fileSize);
+        // reading
+//        int bufferRead = open("read.dat", O_CREAT | O_RDWR,
+//        S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP, 0);
+
+        int file_read = open(path.c_str(), O_RDWR, 0);
+        // writing
+        int bufferWrite = open("write.dat", O_CREAT | O_RDWR,
+                              S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
+
+        //
+        char *fileBuffer = reinterpret_cast<char*>(
+                mmap(NULL, fileSize+4, PROT_READ | PROT_WRITE , MAP_SHARED, file_read, 0));
+        //char* fileBuffer = new char[fileSize];
+        //posix_fallocate(bufferRead, 0, fileSize);
+
+        //file.read(fileBuffer, fileSize);
 
         // Find start point of all data files
-        int processedSize = GetDataStartAndLength(lookUpTable, fileBuffer, fileSize);
+        int processedSize = GetDataStartAndLength(lookUpTable, fileBuffer+4, fileSize);
 
         // Create buffer to store PCM as floats in continues memory
         *data = new char[processedSize];
 
         ConvertToFloat(lookUpTable, *data);
 
-        delete [] fileBuffer;
+        munmap(fileBuffer,fileSize);
+
+        //delete [] fileBuffer;
         return ErrorNum::NoErrors;
     }
 

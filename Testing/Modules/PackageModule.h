@@ -130,7 +130,27 @@ TEST(Package, Encode10)
 }
 #endif //I_SOUND_ENGINE_PACKAGEMODULE_H
 
-static void Read1_100FilePack(benchmark::State& state)
+static void Read1_100FilePackExpected(benchmark::State& state)
+{
+    PackageEncoder encoder;
+    WavFile wav("TestFiles/Slash2.wav");
+    for(int i = 0; i < 100; ++i)
+    {
+        encoder.AddFile(wav, i, PCM);
+    }
+    encoder.WritePackage("TestFiles/100WavFilesExpected.pak");
+
+    for (auto _ : state)
+    {
+        std::unordered_map<uint64_t, SoundData> ParsedData;
+        char* dataPointer;
+        PackageDecoder::DecodePackage(ParsedData, &dataPointer, "TestFiles/100WavFilesExpected.pak");
+        delete [] dataPointer;
+    }
+}
+BENCHMARK(Read1_100FilePackExpected);
+
+static void Read1_100FilePackBrutal(benchmark::State& state)
 {
     PackageEncoder encoder;
     WavFile wav("TestFiles/16_bit_reaper.wav");
@@ -138,14 +158,14 @@ static void Read1_100FilePack(benchmark::State& state)
     {
         encoder.AddFile(wav, i, PCM);
     }
-    encoder.WritePackage("TestFiles/100WavFiles.pak");
+    encoder.WritePackage("TestFiles/100WavFilesBurtal.pak");
 
     for (auto _ : state)
     {
         std::unordered_map<uint64_t, SoundData> ParsedData;
         char* dataPointer;
-        PackageDecoder::DecodePackage(ParsedData, &dataPointer, "TestFiles/100WavFiles.pak");
+        PackageDecoder::DecodePackage(ParsedData, &dataPointer, "TestFiles/100WavFilesBurtal.pak");
         delete [] dataPointer;
     }
 }
-BENCHMARK(Read1_100FilePack);
+BENCHMARK(Read1_100FilePackBrutal);

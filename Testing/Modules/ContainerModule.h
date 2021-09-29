@@ -44,19 +44,44 @@ TEST(WavFiles, Complex_32_bit_read)
     //readWaveFile("TestFiles/32_bit_reaper.wav");
 }
 
-static void Read100WavFiles(benchmark::State& state)
+static void Read100WavFilesExpected(benchmark::State& state)
 {
     // Not timed
     for (auto _ : state)
     {
+        char* bufferOfBuffers[100];
         for(int i = 0; i < 100; ++i)
         {
-            WavFile wavFile("TestFiles/16_bit_reaper.wav");
-            char * buffer = new char[(wavFile.GetDataSize() / 2) * sizeof(float)];
-            wavFile.GetDataAsFloat(reinterpret_cast<float*>(buffer));
-            delete [] buffer;
+            WavFile wavFile("TestFiles/Slash2.wav");
+            bufferOfBuffers[i] = new char[(wavFile.GetDataSize() / 2) * sizeof(float)];
+            wavFile.GetDataAsFloat(reinterpret_cast<float*>(bufferOfBuffers[i]));
+        }
+        for(int i = 0; i < 100; ++i)
+        {
+            delete [] bufferOfBuffers[i];
         }
     }
 
 }
-BENCHMARK(Read100WavFiles);
+BENCHMARK(Read100WavFilesExpected);
+
+static void Read100WavFilesBrutal(benchmark::State& state)
+{
+    // Not timed
+    for (auto _ : state)
+    {
+        char* bufferOfBuffers[100];
+        for(int i = 0; i < 100; ++i)
+        {
+            WavFile wavFile("TestFiles/16_bit_reaper.wav");
+            bufferOfBuffers[i] = new char[(wavFile.GetDataSize() / 2) * sizeof(float)];
+            wavFile.GetDataAsFloat(reinterpret_cast<float*>(bufferOfBuffers[i]));
+        }
+        for(int i = 0; i < 100; ++i)
+        {
+            delete [] bufferOfBuffers[i];
+        }
+    }
+
+}
+BENCHMARK(Read100WavFilesBrutal);
