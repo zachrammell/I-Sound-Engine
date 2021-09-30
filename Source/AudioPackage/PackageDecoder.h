@@ -11,6 +11,14 @@
 
 namespace PackageDecoder
 {
+    /*!
+     * Will decode a given package and map the table to have sound ids pointing to there respect sound
+     * @param lookUpTable The table to fill with info
+     * @param data Decoder will create and fill its own buffer and store here, you are responsible for freeing the memory
+     * @param path Filepath to the bank to decode
+     * @return NoErrors - there were no errors
+     *         Anything else there was errors with decoding
+     */
     ErrorNum DecodePackage(std::unordered_map<uint64_t, SoundData>& lookUpTable, char** data, std::string path);
 };
 

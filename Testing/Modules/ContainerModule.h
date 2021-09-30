@@ -44,6 +44,13 @@ TEST(WavFiles, Complex_32_bit_read)
     //readWaveFile("TestFiles/32_bit_reaper.wav");
 }
 
+#include "OpusFile.h"
+
+TEST(OpusFiles, OpusReadFile)
+{
+    OpusFile file("TestFiles/16_bit_reaper.opus");
+}
+
 static void Read100WavFilesExpected(benchmark::State& state)
 {
     // Not timed
