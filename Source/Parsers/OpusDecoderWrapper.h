@@ -13,7 +13,7 @@ public:
     //TODO How to get channel count???
     explicit OpusDecoderWrapper(int sampleRate, int channels);
 
-    int Decode(char* input, char* output, int frameSize);
+    int Decode(char *input, int inputSize, short *output, int frameSize);
 
 private:
     OpusDecoder* decoder = nullptr;

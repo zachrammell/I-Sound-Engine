@@ -5,6 +5,7 @@
 #ifndef I_SOUND_ENGINE_CONTAINERMODULE_H
 #define I_SOUND_ENGINE_CONTAINERMODULE_H
 
+#include <OpusEncoderWrapper.h>
 #include "gtest/gtest.h"
 #include "WavFile.h"
 #include "benchmark/benchmark.h"
@@ -45,10 +46,41 @@ TEST(WavFiles, Complex_32_bit_read)
 }
 
 #include "OpusFile.h"
+#include "OpusDecoderWrapper.h"
 
 TEST(OpusFiles, OpusReadFile)
 {
-    OpusFile file("TestFiles/16_bit_reaper.opus");
+    WavFile file("TestFiles/16_bit_reaper.wav");
+    OpusEncoderWrapper encoder(48000, file.GetFormat().channel_count);
+
+    char* data = new char[file.GetDataSize() * 2];
+    file.GetDataAsFloat(reinterpret_cast<float*>(data));
+
+    unsigned char* opusData = new unsigned char[file.GetDataSize()];
+
+    int readIndex = 960;
+    int writeIndex = 0;
+
+    while(readIndex + 960 < file.GetDataSize() / 2)
+    {
+        int value = encoder.Encode(reinterpret_cast<short *>(data) + readIndex, 960,
+                                   reinterpret_cast<char *>(opusData + writeIndex), file.GetDataSize());
+        ASSERT_TRUE(value > 0);
+        writeIndex += value;
+        readIndex += 960;
+    }
+
+    //OpusDecoderWrapper decoder(48000, 1);
+    int decodeIndex = 0;
+    int decodeWrite = 0;
+//    while(decodeIndex < writeIndex)
+//    {
+//        //int value = decoder(opusData, 960, )
+//    }
+
+    OpusDecoderWrapper decoder(48000, 1);
+
+    //OpusFile file("TestFiles/16_bit_reaper.opus");
 }
 
 static void Read100WavFilesExpected(benchmark::State& state)

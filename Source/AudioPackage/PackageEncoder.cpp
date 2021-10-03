@@ -8,7 +8,8 @@ ErrorNum PackageEncoder::AddFile(WavFile& wav, uint32_t id, Encoding format)
     if(wav.GetError() == NoErrors)
     {
         filesToEncode.emplace_back(FileInfo{wav, id, format});
-        bufferSize += wav.GetDataSize() + sizeof(uint32_t) + sizeof(WavHeader); // data size + id + header
+        int sampleCount = wav.GetDataSize() / (wav.GetFormat().bits_per_sample / 8);
+        bufferSize += (sampleCount * sizeof (float)) + sizeof(uint32_t) + sizeof(WavHeader); // data size + id + header
     }
     return wav.GetError();
 }
@@ -44,19 +45,20 @@ ErrorNum PackageEncoder::WritePackage(std::string path)
 
         // Write fmt header
         *reinterpret_cast<FormatHeader*>(buffer + offset) = file.wavFile.GetFormat();
+        (*reinterpret_cast<FormatHeader*>(buffer + offset)).bits_per_sample = sizeof(float) * 8;
         offset += sizeof(FormatHeader);
 
         // TODO any proccesing like resmapleing would be done before this step
 
         // Write data header
         GenericHeaderChunk dataChunk{{'d', 'a','t','a'}, 0};
-        dataChunk.chunkSize = file.wavFile.GetDataSize();
+        dataChunk.chunkSize = (file.wavFile.GetDataSize() / (file.wavFile.GetFormat().bits_per_sample / 8)) * sizeof(float);
         *reinterpret_cast<GenericHeaderChunk*>(buffer + offset) = dataChunk;
         offset += sizeof (GenericHeaderChunk);
 
         // Write data
-        file.wavFile.GetDataInNativeType(buffer + offset);
-        offset += file.wavFile.GetDataSize();
+        file.wavFile.GetDataAsFloat(reinterpret_cast<float*>(buffer + offset));
+        offset += dataChunk.chunkSize;
     }
 
     bank.write(buffer, offset);

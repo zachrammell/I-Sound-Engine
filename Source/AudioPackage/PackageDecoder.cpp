@@ -21,7 +21,7 @@ namespace PackageDecoder
             offset += sizeof(uint32_t);
 
             SoundData soundData;
-            soundData.data = data + offset;
+            soundData.data = data + offset + sizeof(WavHeader);
             soundData.audioType = Encoding::PCM;
 
             // Read the header
@@ -115,11 +115,11 @@ namespace PackageDecoder
         int processedSize = GetDataStartAndLength(lookUpTable, fileBuffer+4, fileSize);
 
         // Create buffer to store PCM as floats in continues memory
-        *data = new char[processedSize];
+        //*data = new char[processedSize];
 
-        ConvertToFloat(lookUpTable, *data);
+        //ConvertToFloat(lookUpTable, *data);
 
-        munmap(fileBuffer,fileSize);
+        //munmap(fileBuffer,fileSize);
 
         //delete [] fileBuffer;
         return ErrorNum::NoErrors;

@@ -81,7 +81,7 @@ void TestPackages(std::string outName, T... toRead)
     char* dataPointer;
     PackageDecoder::DecodePackage(ParsedData, &dataPointer, outName);
 
-    delete [] dataPointer;
+    //delete [] dataPointer;
 
     Compare(ParsedData, 0, toRead...);
 
@@ -145,7 +145,7 @@ static void Read1_100FilePackExpected(benchmark::State& state)
         std::unordered_map<uint64_t, SoundData> ParsedData;
         char* dataPointer;
         PackageDecoder::DecodePackage(ParsedData, &dataPointer, "TestFiles/100WavFilesExpected.pak");
-        delete [] dataPointer;
+        //delete [] dataPointer;
     }
 }
 BENCHMARK(Read1_100FilePackExpected);
@@ -165,7 +165,7 @@ static void Read1_100FilePackBrutal(benchmark::State& state)
         std::unordered_map<uint64_t, SoundData> ParsedData;
         char* dataPointer;
         PackageDecoder::DecodePackage(ParsedData, &dataPointer, "TestFiles/100WavFilesBurtal.pak");
-        delete [] dataPointer;
+        //delete [] dataPointer;
     }
 }
 BENCHMARK(Read1_100FilePackBrutal);
