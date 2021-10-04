@@ -14,6 +14,7 @@ public:
     explicit OpusDecoderWrapper(int sampleRate, int channels);
 
     int Decode(char *input, int inputSize, short *output, int frameSize);
+    int DecodeFloat(char *input, int inputSize, float *output, int frameSize);
 
 private:
     OpusDecoder* decoder = nullptr;
