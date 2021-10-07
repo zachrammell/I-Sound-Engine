@@ -5,6 +5,8 @@
 #include "WavFile.h"
 #include <fstream>
 
+#include <limits>
+
 
 WavFile::WavFile(const std::string& path) : errorState(ErrorNum::NoErrors),
                                      wavFile(path, std::ios_base::binary | std::ios_base::in),

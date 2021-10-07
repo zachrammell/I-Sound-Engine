@@ -61,6 +61,8 @@ private:
     std::fstream opusFile;
     OpusHeaderChunk opusHeader;
     CommentHeader commentHeader;
+
+    int CRCCheckSum();
 };
 
 
