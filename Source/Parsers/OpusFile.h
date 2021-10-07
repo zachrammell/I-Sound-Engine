@@ -52,6 +52,8 @@ public:
      */
     bool GetDataAsFloat(float* buffer);
 
+    static void WriteToFile(char* opusData, int size, OpusHeaderChunk header, char* fileName);
+
 private:
     ErrorNum errorState;
     unsigned dataPosition;

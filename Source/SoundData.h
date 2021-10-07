@@ -19,6 +19,8 @@ struct SoundData
 {
     uint32_t sampleCount;
     char* data;
+    uint8_t channels;
+    uint32_t sampleRate;
     Encoding audioType;
 };
 

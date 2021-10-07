@@ -11,6 +11,35 @@
 
 namespace PackageDecoder
 {
+    int ParseWav(int id, std::unordered_map<uint64_t, SoundData>& table, char* data)
+    {
+        SoundData soundData;
+        soundData.data = data + sizeof(WavHeader);
+        soundData.audioType = Encoding::PCM;
+
+        // Read the header
+        // TODO Could optimize to only read needed bytes if parsing is to slow
+        WavHeader header = *reinterpret_cast<WavHeader*>(data);
+        int offset = sizeof(header);
+
+        // Find the number of samples
+        soundData.sampleCount = (header.dataHeader.chunkSize / (header.formatHeader.bits_per_sample / 8));
+        soundData.channels = header.formatHeader.channel_count;
+        soundData.sampleRate = header.formatHeader.sampling_rate;
+
+        // TODO add caclulation for sample rate
+        //soundData.sampleCount * sizeof(float);
+        offset += header.dataHeader.chunkSize;
+
+        table[id] = soundData;
+        return offset;
+    }
+
+    int ParseOpus(int id, std::unordered_map<uint64_t, SoundData>& table, char* data)
+    {
+        
+    }
+
     int GetDataStartAndLength(std::unordered_map<uint64_t, SoundData>& table, char* data, int size)
     {
         int dataLength = 0;
@@ -20,23 +49,17 @@ namespace PackageDecoder
             uint32_t id = *reinterpret_cast<const uint32_t*>(data + offset);
             offset += sizeof(uint32_t);
 
-            SoundData soundData;
-            soundData.data = data + offset + sizeof(WavHeader);
-            soundData.audioType = Encoding::PCM;
+            offset += ParseWav(id, table, data + offset);
 
-            // Read the header
-            // TODO Could optimize to only read needed bytes if parsing is to slow
-            WavHeader header = *reinterpret_cast<WavHeader*>(data + offset);
-            offset += sizeof(header);
+            if(*(data + offset + 0) == 'R' &&
+               *(data + offset + 1) == 'I' &&
+               *(data + offset + 2) == 'F' &&
+               *(data + offset + 3) == 'F')
+            {
+                offset += ParseWav(id, table, data + offset);
+            }
 
-            // Find the number of samples
-            soundData.sampleCount = (header.dataHeader.chunkSize / (header.formatHeader.bits_per_sample / 8));
 
-            // TODO add caclulation for sample rate
-            dataLength += soundData.sampleCount * sizeof(float);
-            offset += header.dataHeader.chunkSize;
-
-            table[id] = soundData;
         }
         return dataLength;
     }

@@ -2,6 +2,8 @@
 #include <fstream>
 #include <memory>
 #include <cstdint>
+#include <OpusEncoderWrapper.h>
+#include "OpusHeader.h"
 
 ErrorNum PackageEncoder::AddFile(WavFile& wav, uint32_t id, Encoding format)
 {
@@ -23,48 +25,102 @@ ErrorNum PackageEncoder::WritePackage(std::string path)
     if(!bank.is_open())
         return ErrorNum::FailedToWriteFile;
 
-    bank.write(reinterpret_cast<char*>(&bufferSize), sizeof(uint32_t));
+    //bank.write(reinterpret_cast<char*>(&bufferSize), sizeof(uint32_t));
 
-    char* buffer = new char[bufferSize];
-    uint32_t offset = 0;
+    char* buffer = new char[bufferSize + sizeof(uint32_t)];
+
+    uint32_t offset = sizeof(uint32_t);
 
     // Store all data in bank
     for(auto& file : filesToEncode)
     {
-        // Write id
-        *reinterpret_cast<uint32_t*>(buffer + offset) = file.id;
-        offset += sizeof (uint32_t);
-
-        // Write riff header
-        RiffHeader riffHeader{{'R','I','F','F'},
-                              0,
-                              {'W','A','V','E'}};
-        riffHeader.riff_size = sizeof(WavHeader) + file.wavFile.GetDataSize();
-        *reinterpret_cast<RiffHeader*>(buffer + offset) = riffHeader;
-        offset += sizeof(RiffHeader);
-
-        // Write fmt header
-        *reinterpret_cast<FormatHeader*>(buffer + offset) = file.wavFile.GetFormat();
-        (*reinterpret_cast<FormatHeader*>(buffer + offset)).bits_per_sample = sizeof(float) * 8;
-        offset += sizeof(FormatHeader);
-
-        // TODO any proccesing like resmapleing would be done before this step
-
-        // Write data header
-        GenericHeaderChunk dataChunk{{'d', 'a','t','a'}, 0};
-        dataChunk.chunkSize = (file.wavFile.GetDataSize() / (file.wavFile.GetFormat().bits_per_sample / 8)) * sizeof(float);
-        *reinterpret_cast<GenericHeaderChunk*>(buffer + offset) = dataChunk;
-        offset += sizeof (GenericHeaderChunk);
-
-        // Write data
-        file.wavFile.GetDataAsFloat(reinterpret_cast<float*>(buffer + offset));
-        offset += dataChunk.chunkSize;
+        if(file.encoding == Encoding::PCM)
+        {
+            offset += WritePCM(buffer + offset, file);
+        }
+        else if(file.encoding == Encoding::Opus)
+        {
+            offset += WriteOpus(buffer + offset, file);
+        }
     }
+
+    *reinterpret_cast<uint32_t *>(buffer) = offset - sizeof(uint32_t);
 
     bank.write(buffer, offset);
     bank.close();
     delete [] buffer;
 
-
     return ErrorNum::NoErrors;
+}
+
+int PackageEncoder::WritePCM(char* buffer, FileInfo& file)
+{
+    *reinterpret_cast<uint32_t*>(buffer) = file.id;
+    int offset = sizeof (uint32_t);
+
+    // Write riff header
+    RiffHeader riffHeader{{'R','I','F','F'},
+                          0,
+                          {'W','A','V','E'}};
+    riffHeader.riff_size = sizeof(WavHeader) + file.wavFile.GetDataSize();
+    *reinterpret_cast<RiffHeader*>(buffer + offset) = riffHeader;
+    offset += sizeof(RiffHeader);
+
+    // Write fmt header
+    *reinterpret_cast<FormatHeader*>(buffer + offset) = file.wavFile.GetFormat();
+    (*reinterpret_cast<FormatHeader*>(buffer + offset)).bits_per_sample = sizeof(float) * 8;
+    offset += sizeof(FormatHeader);
+
+    // TODO any proccesing like resmapleing would be done before this step
+
+    // Write data header
+    GenericHeaderChunk dataChunk{{'d', 'a','t','a'}, 0};
+    dataChunk.chunkSize = (file.wavFile.GetDataSize() / (file.wavFile.GetFormat().bits_per_sample / 8)) * sizeof(float);
+    *reinterpret_cast<GenericHeaderChunk*>(buffer + offset) = dataChunk;
+    offset += sizeof (GenericHeaderChunk);
+
+    // Write data
+    file.wavFile.GetDataAsFloat(reinterpret_cast<float*>(buffer + offset));
+    offset += dataChunk.chunkSize;
+    return offset;
+}
+
+int PackageEncoder::WriteOpus(char* buffer, FileInfo& file)
+{
+    *reinterpret_cast<uint32_t*>(buffer) = file.id;
+    int offset = sizeof (uint32_t);
+
+    FormatHeader fmtHeader = file.wavFile.GetFormat();
+    OpusHeaderChunk headerChunk {{'o', 'p', 'u', 's', 'h', 'e', 'a', 'd'}};
+    headerChunk.channels = fmtHeader.channel_count;
+    headerChunk.sampleRate = fmtHeader.sampling_rate;
+    headerChunk.mapingFamily = 0;
+    headerChunk.outputGain = 0;
+    headerChunk.preSkip = 0;
+    headerChunk.version = 1;
+
+    *reinterpret_cast<OpusHeaderChunk*>(buffer + offset) = headerChunk;
+    offset += sizeof (OpusHeaderChunk);
+    // TODO test if in memory buffer works so no need for secound buffer
+
+    OpusEncoderWrapper encoder(48000, fmtHeader.channel_count);
+
+    int sampleCount = file.wavFile.GetDataSize() / (file.wavFile.GetFormat().bits_per_sample / 8);
+    float* sampleBuffer = new float[sampleCount];
+    file.wavFile.GetDataAsFloat(sampleBuffer);
+
+    int samplesEncoded = 0;
+    while(samplesEncoded <= sampleCount - 960)
+    {
+        int encodedCount = encoder.Encode(sampleBuffer, 960,
+                                          buffer + offset + sizeof(uint32_t), 960);
+        if(encodedCount < 0)
+        {
+            // problem happened
+        }
+
+        *reinterpret_cast<uint32_t*>(buffer + offset) = encodedCount;
+        samplesEncoded += 960/2;
+    }
+    return offset;
 }

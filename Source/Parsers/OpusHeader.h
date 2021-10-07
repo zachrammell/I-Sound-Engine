@@ -34,4 +34,18 @@ struct CommentHeader
     char** userComments;          // User Comments
 };
 
+// size of 28
+struct OggS
+{
+    char signature[4]; // OggS
+    char version; // 0
+    char headerTypes; // Refer to docs
+    char gPosition[8]; // total number of pcm frames decoded including this one
+    int seirlNumber; // number to identify self
+    int pageSequenceNumber; // page number
+    int CheckSum; // hope you dont need this
+    char pageSegments; // number of segmetns in segmation table
+    char segmationTable; //
+};
+
 #endif //I_SOUND_ENGINE_OPUSHEADER_H

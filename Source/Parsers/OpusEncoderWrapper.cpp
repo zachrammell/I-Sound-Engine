@@ -10,6 +10,7 @@ constexpr int application = OPUS_APPLICATION_AUDIO;
 OpusEncoderWrapper::OpusEncoderWrapper(int samplingRate, int channels)
 {
     encoder = opus_encoder_create(samplingRate, channels, application, &error);
+    //opus_encoder_ctl(encoder, OPUS_SET_BITRATE(512000));
 }
 
 int OpusEncoderWrapper::GetOpusError() const
@@ -17,9 +18,11 @@ int OpusEncoderWrapper::GetOpusError() const
     return error;
 }
 
-int OpusEncoderWrapper::Encode(short* inBuff, int inSize, char* outBuff, int outSize)
+int OpusEncoderWrapper::Encode(short* pcmSamples, int pcmFrames, char* opusData, int opusDataMaxSize)
 {
-   int value = opus_encode(encoder, inBuff, inSize, reinterpret_cast<unsigned char*>(outBuff), outSize);
+   int value = opus_encode(encoder, pcmSamples, pcmFrames, reinterpret_cast<unsigned char*>(opusData), opusDataMaxSize);
+
+
    if(value < 0)
        error = value;
    return value;
@@ -31,4 +34,9 @@ int OpusEncoderWrapper::Encode(float* inBuff, int inSamples, char* outBuff, int 
     if(value < 0)
         error = value;
     return value;
+}
+
+OpusEncoderWrapper::~OpusEncoderWrapper()
+{
+    opus_encoder_destroy(encoder);
 }

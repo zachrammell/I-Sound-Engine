@@ -17,3 +17,8 @@ int OpusDecoderWrapper::Decode(char *input, int inputSize, short *output, int fr
     int value = opus_decode(decoder, reinterpret_cast<const unsigned char *>(input), inputSize, output, frameSize, 0);
     return value;
 }
+
+OpusDecoderWrapper::~OpusDecoderWrapper()
+{
+    opus_decoder_destroy(decoder);
+}

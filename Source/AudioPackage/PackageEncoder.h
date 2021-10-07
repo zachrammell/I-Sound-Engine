@@ -35,6 +35,7 @@ public:
      ErrorNum WritePackage(std::string path);
 
 private:
+
     unsigned bufferSize = 0;
 
     struct FileInfo
@@ -45,6 +46,10 @@ private:
     };
 
     std::vector<FileInfo> filesToEncode;
+
+    int WritePCM(char* buffer, FileInfo& file);
+    int WriteOpus(char* buffer, FileInfo& file);
+
 };
 
 

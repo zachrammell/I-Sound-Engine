@@ -5,6 +5,7 @@
 #include "OpusFile.h"
 
 #include <iostream>
+#include <cstring>
 
 OpusFile::OpusFile(const std::string &path) : errorState(ErrorNum::NoErrors),
                                               opusFile(path, std::ios_base::binary | std::ios_base::in)
@@ -63,4 +64,82 @@ OpusFile::~OpusFile()
         delete [] commentHeader.userComments;
         delete [] commentHeader.userCommentsLength;
     }
+}
+
+void OpusFile::WriteToFile(char* opusData, int size, OpusHeaderChunk header, char* fileName)
+{
+    OggS OggSHeader{'O', 'g', 'g', 'S'};
+    OggSHeader.version = 0;
+    memset(OggSHeader.gPosition, 0, 8);
+    OggSHeader.pageSegments = 1;
+    OggSHeader.seirlNumber = 0;
+    OggSHeader.CheckSum = 0;
+    OggSHeader.headerTypes = 0x2;
+    OggSHeader.segmationTable = 19; // Magic OpusHeader Size;
+
+    std::fstream file(fileName, std::ios_base::binary | std::ios_base::out);
+
+    int sizeOggs = sizeof(OggS);
+    file.write(OggSHeader.signature, sizeof(OggSHeader.signature));
+    file.write(&OggSHeader.version, sizeof(OggSHeader.version));
+    file.write(&OggSHeader.headerTypes, sizeof(OggSHeader.headerTypes));
+    file.write(OggSHeader.gPosition, sizeof(OggSHeader.gPosition));
+    file.write(reinterpret_cast<char*>(&OggSHeader.seirlNumber), sizeof(OggSHeader.seirlNumber));
+    file.write(reinterpret_cast<char*>(&OggSHeader.pageSequenceNumber), sizeof(OggSHeader.pageSequenceNumber));
+    file.write(reinterpret_cast<char*>(&OggSHeader.CheckSum), sizeof(OggSHeader.CheckSum));
+    file.write(&OggSHeader.pageSegments, sizeof(OggSHeader.pageSegments));
+    file.write(&OggSHeader.segmationTable, sizeof(OggSHeader.segmationTable));
+    file.write(reinterpret_cast<char *>(&header), 19);
+
+    CommentHeader cHeader{'O','p','u','s','T','a','g','s'};
+    char MyVender[] = {"Imp"};
+    cHeader.vendorStringLength = 3;
+    cHeader.numOfUsercomments = 0;
+
+    OggSHeader.headerTypes = 0;
+    OggSHeader.pageSequenceNumber = 1;
+    OggSHeader.segmationTable = 19;
+
+    file.write(OggSHeader.signature, sizeof(OggSHeader.signature));
+    file.write(&OggSHeader.version, sizeof(OggSHeader.version));
+    file.write(&OggSHeader.headerTypes, sizeof(OggSHeader.headerTypes));
+    file.write(OggSHeader.gPosition, sizeof(OggSHeader.gPosition));
+    file.write(reinterpret_cast<char*>(&OggSHeader.seirlNumber), sizeof(OggSHeader.seirlNumber));
+    file.write(reinterpret_cast<char*>(&OggSHeader.pageSequenceNumber), sizeof(OggSHeader.pageSequenceNumber));
+    file.write(reinterpret_cast<char*>(&OggSHeader.CheckSum), sizeof(OggSHeader.CheckSum));
+    file.write(&OggSHeader.pageSegments, sizeof(OggSHeader.pageSegments));
+    file.write(&OggSHeader.segmationTable, sizeof(OggSHeader.segmationTable));
+
+    file.write(cHeader.signature,8);
+    file.write(reinterpret_cast<char*>(&cHeader.vendorStringLength), sizeof(cHeader.vendorStringLength));
+    file.write(MyVender, 3);
+    file.write(reinterpret_cast<char*>(&cHeader.numOfUsercomments), sizeof(cHeader.numOfUsercomments));
+
+
+    OggSHeader.pageSequenceNumber = 2;
+    *reinterpret_cast<short*>(&OggSHeader.gPosition[0]) = 960;
+    OggSHeader.headerTypes = 0x4;
+
+    file.write(OggSHeader.signature, sizeof(OggSHeader.signature));
+    file.write(&OggSHeader.version, sizeof(OggSHeader.version));
+    file.write(&OggSHeader.headerTypes, sizeof(OggSHeader.headerTypes));
+    file.write(OggSHeader.gPosition, sizeof(OggSHeader.gPosition));
+    file.write(reinterpret_cast<char*>(&OggSHeader.seirlNumber), sizeof(OggSHeader.seirlNumber));
+    file.write(reinterpret_cast<char*>(&OggSHeader.pageSequenceNumber), sizeof(OggSHeader.pageSequenceNumber));
+    file.write(reinterpret_cast<char*>(&OggSHeader.CheckSum), sizeof(OggSHeader.CheckSum));
+    file.write(&OggSHeader.pageSegments, sizeof(OggSHeader.pageSegments));
+
+    int value = *reinterpret_cast<int*>(opusData);
+    unsigned char valueToPrint = 255;
+
+    while(value > 0 )
+    {
+        if(value < 255)
+            valueToPrint = value;
+        file.write(reinterpret_cast<char*>(&valueToPrint), sizeof(char));
+        value -= valueToPrint;
+    }
+
+    file.write(opusData + sizeof(uint32_t), *reinterpret_cast<uint32_t*>(opusData));
+
 }

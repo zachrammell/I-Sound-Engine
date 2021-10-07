@@ -11,6 +11,7 @@ class OpusEncoderWrapper
 {
 public:
     OpusEncoderWrapper(int samplingRate, int channels);
+    ~OpusEncoderWrapper();
 
     int GetOpusError() const;
 
@@ -22,9 +23,9 @@ public:
      * @param outSize Max about of bytes outBuff can store
      * @return >0 is the number of bytes outBuff used, <0 is for a failure
      */
-    int Encode(short* inBuff, int inSize, char* outBuff, int outSize);
+    int Encode(short* pcmSamples, int pcmFrames, char* opusData, int opusDataMaxSize);
 
-    int Encode(float* inBuff, int inSamples, char* outBuff, int outSize);
+    int Encode(float* pcmSamples, int pcmFrames, char* opusData, int opusDataMaxSize);
 
 private:
     OpusEncoder* encoder;
