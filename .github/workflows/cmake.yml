@@ -35,9 +35,9 @@ jobs:
       run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} --target ISEBenchmark
       
     - name: CopyTest
-      run: cp ${{github.workspace}}/build/Testing/Temporay/ISETests ${{github.workspace}}/Testing
+      run: cp ${{github.workspace}}/build/Testing/ISETests ${{github.workspace}}/Testing
     - name: CopyBenchmark
-      run: cp ${{github.workspace}}/build/Testing/Temporay/ISEBenchmark ${{github.workspace}}/Testing
+      run: cp ${{github.workspace}}/build/Testing/ISEBenchmark ${{github.workspace}}/Testing
     
     - name: Test
       working-directory: ${{github.workspace}}/Testing
