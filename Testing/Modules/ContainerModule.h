@@ -9,6 +9,7 @@
 #include "gtest/gtest.h"
 #include "WavFile.h"
 #include "benchmark/benchmark.h"
+#include "../../Source/Filters/OpusContainer.h"
 
 void readWaveFile(std::string name);
 
@@ -149,6 +150,23 @@ TEST(OpusFiles, OpusReadFile)
     opusHeader.mapingFamily = 0;
 
     OpusFile::WriteToFile(reinterpret_cast<char *>(opusData), altWriteIndex, opusHeader, "TestFiles/myConverted.ogg");
+}
+
+TEST(OpusFiles, EncodeMusic)
+{
+    WavFile file("TestFiles/level.wav");
+    ASSERT_TRUE(file);
+
+    char* data = new char[file.GetDataSize()];
+
+    int fileSize = file.GetDataAsOpus(data);
+    std::fstream oggFile("TestFiles/level.ogg", std::ios_base::binary | std::ios_base::out);
+    oggFile.write(data, fileSize);
+
+    char* output = new char[file.GetDataSize()];
+    int offset = 0;
+
+    OpusContainer<float> filter(data, ChannelType::Stereo);
 }
 
 static void Read100WavFilesExpected(benchmark::State& state)

@@ -143,3 +143,24 @@ void OpusFile::WriteToFile(char* opusData, int size, OpusHeaderChunk header, cha
     file.write(opusData + sizeof(uint32_t), *reinterpret_cast<uint32_t*>(opusData));
 
 }
+
+int OpusFile::WriteOggStoBuffer(char* buffer, OggS header)
+{
+    memcpy(buffer, header.signature, 4);
+    int offset = sizeof(OggS::signature);
+    *(buffer+offset) = header.version;
+    offset += sizeof(OggS::version);
+    *(buffer+offset) = header.headerTypes;
+    memcpy(buffer + offset, header.gPosition, sizeof(OggS::gPosition));
+    offset += sizeof(OggS::gPosition);
+    *reinterpret_cast<int*>(buffer+offset) = header.seirlNumber;
+    offset += sizeof(int);
+    *reinterpret_cast<int*>(buffer+offset) = header.pageSequenceNumber;
+    offset += sizeof(int);
+    *reinterpret_cast<int*>(buffer+offset) = header.CheckSum;
+    offset += sizeof(int);
+    *(buffer+offset) = header.pageSegments;
+    offset += sizeof(char);
+
+    return offset;
+}

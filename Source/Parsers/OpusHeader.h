@@ -34,7 +34,7 @@ struct CommentHeader
     char** userComments;          // User Comments
 };
 
-// size of 28
+// size of 27
 struct OggS
 {
     char signature[4]; // OggS

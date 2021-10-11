@@ -130,6 +130,35 @@ TEST(Package, Encode10)
 }
 #endif //I_SOUND_ENGINE_PACKAGEMODULE_H
 
+static void Encode100WavExpectedFilePack(benchmark::State& state)
+{
+    for(auto _ : state)
+    {
+        PackageEncoder encoder;
+        WavFile wav("TestFiles/Slash2.wav");
+        for(int i = 0; i < 100; ++i)
+        {
+            encoder.AddFile(wav, i, PCM);
+        }
+        encoder.WritePackage("TestFiles/100WavFilesExpected.pak");
+    }
+}
+BENCHMARK(Encode100WavExpectedFilePack);
+
+static void Encode100WavBurtalFilePack(benchmark::State& state)
+{
+    for(auto _ : state)
+    {
+        PackageEncoder encoder;
+        WavFile wav("TestFiles/16_bit_reaper.wav");
+        for(int i = 0; i < 100; ++i)
+        {
+            encoder.AddFile(wav, i, PCM);
+        }
+        encoder.WritePackage("TestFiles/100WavFilesBurtal.pak");}
+}
+BENCHMARK(Encode100WavBurtalFilePack);
+
 static void Read1_100FilePackExpected(benchmark::State& state)
 {
     PackageEncoder encoder;

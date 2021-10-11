@@ -12,7 +12,8 @@ enum ErrorNum
     NotAPCMFile,
     FailedToWriteFile,
     UnsportedFile,
-    PossibleCorution
+    PossibleCorution,
+    OpusError,
 };
 
 #endif //I_SOUND_ENGINE_ERRORLIST_H

@@ -8,8 +8,8 @@ add_subdirectory(ctest)
 
 #target_include_directories(Parsers INTERFACE ${CMAKE_SOURCE_DIR})
 
-set(HEADER_FILES SoundContainer.h WavContainer.h ../Parsers/WavHeader.h)
+set(HEADER_FILES SoundContainer.h WavContainer.h OpusContainer.h)
 
 add_library(Container INTERFACE ${HEADER_FILES})
-target_include_directories(Container PRIVATE)
-
+target_include_directories(Container PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(Container opus)

@@ -53,7 +53,7 @@ public:
     bool GetDataAsFloat(float* buffer);
 
     static void WriteToFile(char* opusData, int size, OpusHeaderChunk header, char* fileName);
-
+    static int WriteOggStoBuffer(char* buffer, OggS header);
 private:
     ErrorNum errorState;
     unsigned dataPosition;

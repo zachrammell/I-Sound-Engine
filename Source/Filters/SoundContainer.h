@@ -54,7 +54,7 @@ public:
      * @param offset How far to move from current position
      * @return The sample at the position
      */
-    virtual Frame<sampleType> GetSampleFromOffset(int offset) = 0;
+    //virtual Frame<sampleType> GetSampleFromOffset(int offset) = 0;
 
     /*!
      * Sets the playback speed
@@ -83,7 +83,7 @@ public:
      * Set the position to seek to
      * @param position position to seek to
      */
-    virtual void Seek(int position)                    = 0;
+    //virtual void Seek(int position)                    = 0;
     //virtural const storageType& GetAllSamples()      = 0;
 
 protected:

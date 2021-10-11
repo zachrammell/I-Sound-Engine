@@ -57,6 +57,14 @@ public:
      */
     bool GetDataAsFloat(float* buffer);
 
+    /*!
+     * Convert wave data to opus encoding
+     * @param buffer Buffer should be large enough to fit wav data
+     * @return true  - file was converted and writen into the buffer
+     *         false - Check GetError();
+     */
+    int GetDataAsOpus(char* buffer);
+
 private:
 
     void ParseFormat();

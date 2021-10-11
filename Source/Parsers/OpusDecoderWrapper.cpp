@@ -18,6 +18,12 @@ int OpusDecoderWrapper::Decode(char *input, int inputSize, short *output, int fr
     return value;
 }
 
+int OpusDecoderWrapper::DecodeFloat(char *input, int inputSize, float *output, int frameSize)
+{
+    int value = opus_decode_float(decoder, reinterpret_cast<const unsigned char *>(input), inputSize, output, frameSize, 0);
+    return value;
+}
+
 OpusDecoderWrapper::~OpusDecoderWrapper()
 {
     opus_decoder_destroy(decoder);

@@ -4,9 +4,14 @@
 
 #include "WavFile.h"
 #include <fstream>
+#include "OpusEncoderWrapper.h"
+#include "OpusHeader.h"
+#include <cstring>
+#include "OpusFile.h"
 
 #include <limits>
 
+constexpr int EncodeSize = 960;
 
 WavFile::WavFile(const std::string& path) : errorState(ErrorNum::NoErrors),
                                      wavFile(path, std::ios_base::binary | std::ios_base::in),
@@ -171,4 +176,66 @@ bool WavFile::GetDataAsFloat(float *buffer)
             return true;
     }
     return false;
+}
+
+int WavFile::GetDataAsOpus(char* buffer)
+{
+    // TODO Convert other types to 16 bit for opus, could also use floats
+    GetDataInNativeType(buffer);
+
+    // Three buffers per ogg grouping
+    char writeBuffer[EncodeSize];
+
+    OggS header {'O','g','g','S'};
+    header.version = 0;
+    memset(header.gPosition, 0, 8);
+    header.pageSegments = 1;
+    header.seirlNumber = 101;
+    header.CheckSum = 0;
+    header.headerTypes = 0x0;
+    header.pageSequenceNumber = 2;
+
+    OpusEncoderWrapper encoder(48000, fmtHeader.channel_count);
+
+    //TODO Have more than one chunk per OggS
+    int offset = 0;
+    while(offset <= dataSize - (EncodeSize * 2))
+    {
+        int size = encoder.Encode(reinterpret_cast<short*>(buffer + offset), EncodeSize, writeBuffer, EncodeSize);
+        if(size < 0)
+        {
+            errorState = ErrorNum::OpusError;
+            return -1;
+        }
+
+        offset += OpusFile::WriteOggStoBuffer(buffer + offset, header);
+
+        int writeSize = size;
+        while(writeSize > 0)
+        {
+            if(writeSize > 255) // Buffer doesnt fit in a char
+            {
+                *(buffer + offset) = 255;
+                writeSize -= 255;
+            }
+            else if (writeSize == 255) // fits exactly into one char
+            {
+                *(buffer + offset) = 255;
+                ++offset;
+                *(buffer + offset) = 0;
+                writeSize = 0;
+            }
+            else // size fits in a char
+            {
+                *(buffer + offset) = writeSize;
+                writeSize = 0;
+            }
+            ++offset;
+        }
+        memcpy(buffer+offset, writeBuffer, size);
+        offset += size;
+
+        ++header.pageSequenceNumber;
+    }
+    return offset;
 }
