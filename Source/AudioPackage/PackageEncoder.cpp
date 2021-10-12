@@ -91,7 +91,7 @@ int PackageEncoder::WriteOpus(char* buffer, FileInfo& file)
     int offset = sizeof (uint32_t);
 
     FormatHeader fmtHeader = file.wavFile.GetFormat();
-    OpusHeaderChunk headerChunk {{'o', 'p', 'u', 's', 'h', 'e', 'a', 'd'}};
+    OpusHeaderChunk headerChunk {{'O', 'p', 'u', 's', 'H', 'e', 'a', 'd'}};
     headerChunk.channels = fmtHeader.channel_count;
     headerChunk.sampleRate = fmtHeader.sampling_rate;
     headerChunk.mapingFamily = 0;
@@ -100,27 +100,10 @@ int PackageEncoder::WriteOpus(char* buffer, FileInfo& file)
     headerChunk.version = 1;
 
     *reinterpret_cast<OpusHeaderChunk*>(buffer + offset) = headerChunk;
-    offset += sizeof (OpusHeaderChunk);
+    offset += 19;
     // TODO test if in memory buffer works so no need for secound buffer
 
-    OpusEncoderWrapper encoder(48000, fmtHeader.channel_count);
+    offset += file.wavFile.GetDataAsOpus(buffer + offset);
 
-    int sampleCount = file.wavFile.GetDataSize() / (file.wavFile.GetFormat().bits_per_sample / 8);
-    float* sampleBuffer = new float[sampleCount];
-    file.wavFile.GetDataAsFloat(sampleBuffer);
-
-    int samplesEncoded = 0;
-    while(samplesEncoded <= sampleCount - 960)
-    {
-        int encodedCount = encoder.Encode(sampleBuffer, 960,
-                                          buffer + offset + sizeof(uint32_t), 960);
-        if(encodedCount < 0)
-        {
-            // problem happened
-        }
-
-        *reinterpret_cast<uint32_t*>(buffer + offset) = encodedCount;
-        samplesEncoded += 960/2;
-    }
     return offset;
 }

@@ -58,3 +58,41 @@ void readWaveFile(std::string name)
 
     return;
 }
+
+void encodeWaveToOggThenWav(char* inFile, char* outFileOgg, char*  outFileWav)
+{
+    WavFile file(inFile);
+    ASSERT_TRUE(file);
+
+    char *output = new char[file.GetDataSize()];
+    // Write as ogg file to check compresstion
+    int fileSize = file.GetDataAsOpus(output);
+    std::fstream oggFile(outFileOgg, std::ios_base::binary | std::ios_base::out);
+    oggFile.write(output, fileSize);
+
+    OpusContainer<float> filter(output, ChannelType::Stereo);
+
+    //memset(data, 0, file.GetDataSize());
+    char *data = new char[file.GetDataSize() * 10]();
+
+    for (int i = 0; i < file.GetDataSize() - 960; i  += 4)
+    {
+        Frame<float> frame = filter.GetNextSample();
+        short  left = static_cast<short>(frame.leftChannel);
+        short  right = static_cast<short>(frame.rightChannel);
+
+        *reinterpret_cast<short*>(data + i) = left;
+        *reinterpret_cast<short*>(data + i + 2) = right;
+    }
+
+    std::fstream tesConvert(outFileWav, std::ios_base::binary | std::ios_base::out);
+    RiffHeader riffHeader{{'R','I','F','F'},
+                          0,
+                          {'W','A','V','E'}};
+    tesConvert.write(reinterpret_cast<char*>(&riffHeader), sizeof(riffHeader));
+    tesConvert.write(reinterpret_cast<const char*>(&file.GetFormat()), sizeof(FormatHeader));
+    GenericHeaderChunk dataChunk{{'d', 'a','t','a'}, file.GetDataSize()};
+    dataChunk.chunkSize = file.GetDataSize();
+    tesConvert.write(reinterpret_cast<char*>(&dataChunk), sizeof(dataChunk));
+    tesConvert.write(data, file.GetDataSize());
+}

@@ -20,7 +20,7 @@ public:
     OpusContainer(char* opusData, ChannelType channels) : type(channels),
                                           decoder(48000, channels == ChannelType::Mono ? 1 : 2),
                                           opusData(opusData),
-                                          offsetIntoOpusFrame(0),
+                                          offsetIntoOpusFrame(std::numeric_limits<int>::max()),
                                           offsetIntoRawOpus(0)
     {
 
@@ -28,24 +28,40 @@ public:
 
     Frame<sampleType> GetNextSample() override
     {
-        if(offsetIntoOpusFrame >= OpusFrameSize)
+        // Does a new frame need to be decoded
+        if(offsetIntoOpusFrame >= OpusFrameSize * 2 )
         {
-            int tableIndex = 28;
-            int opusPacketSize = *(opusData + offsetIntoRawOpus + tableIndex);
+            // SanityCheck
+            char OggSMagicNum[4];
+            memcpy(OggSMagicNum, opusData + offsetIntoRawOpus, 4);
+            if(OggSMagicNum[0] != 'O')
+            {
+                return Frame<sampleType>();
+            }
+
+            int tableIndex = 26; // Magic number to segmentation table
+            int opusPacketSize = *reinterpret_cast<unsigned char*>((opusData + offsetIntoRawOpus + tableIndex));
             ++tableIndex;
             int readSize = opusPacketSize;
 
+            // size == 255 means that there are more bytes need to create this segment
             while(readSize == 255)
             {
-                readSize = *(opusData + offsetIntoRawOpus + tableIndex);
+                readSize = *reinterpret_cast<unsigned char*>((opusData + offsetIntoRawOpus + tableIndex));
                 opusPacketSize += readSize;
                 ++tableIndex;
             }
-            offsetIntoOpusFrame += tableIndex;
-            decoder.DecodeFloat(opusData + offsetIntoOpusFrame, opusPacketSize, decodedOpusFrame, OpusFrameSize);
+            offsetIntoRawOpus += tableIndex;
+            int returnValue = decoder.Decode(opusData + offsetIntoRawOpus, opusPacketSize, decodedOpusFrame, OpusFrameSize);
+            if(returnValue < 0)
+            {
+                return Frame<sampleType>();
+            }
+            offsetIntoRawOpus += opusPacketSize;
             offsetIntoOpusFrame = 0;
         }
 
+        // Read samples into output
         Frame<sampleType> output;
         if(type == ChannelType::Mono)
         {
@@ -70,7 +86,7 @@ private:
     char* opusData;
     uint64_t offsetIntoRawOpus;
 
-    float decodedOpusFrame[OpusFrameSize];
+    short decodedOpusFrame[OpusFrameSize * 2];
     int offsetIntoOpusFrame;
 
 };
