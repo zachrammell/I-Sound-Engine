@@ -9,6 +9,7 @@
 #include "OpusDecoderWrapper.h"
 #include "OpusHeader.h"
 #include "cstring"
+#include "OpusFile.h"
 
 constexpr int OpusFrameSize = 960;
 
@@ -29,34 +30,22 @@ public:
     Frame<sampleType> GetNextSample() override
     {
         // Does a new frame need to be decoded
-        if(offsetIntoOpusFrame >= OpusFrameSize * 2 )
+        if(offsetIntoOpusFrame >= OpusFrameSize * (type == ChannelType::Stereo ? 2 : 1))
         {
             // SanityCheck
             char OggSMagicNum[4];
             memcpy(OggSMagicNum, opusData + offsetIntoRawOpus, 4);
-            if(OggSMagicNum[0] != 'O')
-            {
-                return Frame<sampleType>();
-            }
 
-            int tableIndex = 26; // Magic number to segmentation table
-            int opusPacketSize = *reinterpret_cast<unsigned char*>((opusData + offsetIntoRawOpus + tableIndex));
-            ++tableIndex;
-            int readSize = opusPacketSize;
+            assert(OggSMagicNum[0] == 'O'  && "OggS magic number not found in offset");
 
-            // size == 255 means that there are more bytes need to create this segment
-            while(readSize == 255)
-            {
-                readSize = *reinterpret_cast<unsigned char*>((opusData + offsetIntoRawOpus + tableIndex));
-                opusPacketSize += readSize;
-                ++tableIndex;
-            }
+            int opusPacketSize;
+            int tableIndex = OpusFile::GetSegementSize(opusData + offsetIntoRawOpus, opusPacketSize);
+
             offsetIntoRawOpus += tableIndex;
             int returnValue = decoder.Decode(opusData + offsetIntoRawOpus, opusPacketSize, decodedOpusFrame, OpusFrameSize);
-            if(returnValue < 0)
-            {
-                return Frame<sampleType>();
-            }
+
+            assert(returnValue >= 0 && "Opus decoder failed");
+
             offsetIntoRawOpus += opusPacketSize;
             offsetIntoOpusFrame = 0;
         }

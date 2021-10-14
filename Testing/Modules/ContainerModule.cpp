@@ -59,13 +59,13 @@ void readWaveFile(std::string name)
     return;
 }
 
-void encodeWaveToOggThenWav(char* inFile, char* outFileOgg, char*  outFileWav)
+void encodeWaveToOggThenWav(const char* inFile, const char* outFileOgg, const char*  outFileWav)
 {
     WavFile file(inFile);
     ASSERT_TRUE(file);
 
     char *output = new char[file.GetDataSize()];
-    // Write as ogg file to check compresstion
+    // Write as ogg file to check compresstion ratio
     int fileSize = file.GetDataAsOpus(output);
     std::fstream oggFile(outFileOgg, std::ios_base::binary | std::ios_base::out);
     oggFile.write(output, fileSize);
@@ -75,7 +75,7 @@ void encodeWaveToOggThenWav(char* inFile, char* outFileOgg, char*  outFileWav)
     //memset(data, 0, file.GetDataSize());
     char *data = new char[file.GetDataSize() * 10]();
 
-    for (int i = 0; i < file.GetDataSize() - 960; i  += 4)
+    for (int i = 0; i < file.GetDataSize() - 960 * 2; i  += 4)
     {
         Frame<float> frame = filter.GetNextSample();
         short  left = static_cast<short>(frame.leftChannel);

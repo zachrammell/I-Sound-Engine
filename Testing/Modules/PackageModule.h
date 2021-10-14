@@ -58,7 +58,6 @@ void TestPackages(std::string outName, T... toRead)
     //--------------------------------------------------
     // ENCODING
     //--------------------------------------------------
-    {
     std::vector<WavFile> files;
 
     addFile(files, toRead...);
@@ -71,7 +70,6 @@ void TestPackages(std::string outName, T... toRead)
     }
 
     ASSERT_TRUE(encoder.WritePackage(outName) == ErrorNum::NoErrors);
-    }
 
     //--------------------------------------------------
     // DECODING
@@ -87,39 +85,76 @@ void TestPackages(std::string outName, T... toRead)
 
 }
 
+template<typename... T>
+void TestOpusPackages(std::string outName, T... toRead)
+{
+    //--------------------------------------------------
+    // ENCODING
+    //--------------------------------------------------
+
+    std::vector<WavFile> files;
+
+    addFile(files, toRead...);
+
+    PackageEncoder encoder;
+
+    for (int i = 0; i < files.size(); ++i)
+    {
+        encoder.AddFile(files[i], i, Encoding::Opus);
+    }
+
+    ASSERT_TRUE(encoder.WritePackage(outName) == ErrorNum::NoErrors);
+
+    //--------------------------------------------------
+    // DECODING
+    //--------------------------------------------------
+
+    std::unordered_map<uint64_t, SoundData> ParsedData;
+    char* dataPointer;
+    PackageDecoder::DecodePackage(ParsedData, &dataPointer, outName);
+
+    for(int i = 0;  i < files.size(); ++i)
+    {
+        ASSERT_TRUE(files[i].GetFormat().channel_count == (int)ParsedData[i].channels) << "Wav " << files[i].GetFormat().channel_count << "  opus " <<  (int)ParsedData[i].channels;
+        ASSERT_TRUE(files[i].GetFormat().sampling_rate == ParsedData[i].sampleRate);
+    }
 
 
-TEST(Package, EncodeSimpleWav)
+}
+
+
+
+TEST(PackageWav, EncodeSimpleWav)
 {
     TestPackages("TestFiles/TESTBank1Wav.pak", "TestFiles/16_bit_simple.wav");
 }
 
-TEST(Package, EncodeComplexWav)
+TEST(PackageWav, EncodeComplexWav)
 {
     TestPackages("TestFiles/TESTBank1Wav.pak", "TestFiles/16_bit_reaper.wav");
 }
 
-TEST(Package, Encode2SimpleWav)
+TEST(PackageWav, Encode2SimpleWav)
 {
     TestPackages("TestFiles/TESTBank1Wav.pak", "TestFiles/16_bit_simple.wav", "TestFiles/16_bit_simple.wav");
 }
 
-TEST(Package, Encode2ComplexWav)
+TEST(PackageWav, Encode2ComplexWav)
 {
     TestPackages("TestFiles/TESTBank1Wav.pak", "TestFiles/16_bit_reaper.wav", "TestFiles/16_bit_reaper.wav");
 }
 
-TEST(Package, Encode2DifferntWav)
+TEST(PackageWav, Encode2DifferntWav)
 {
     TestPackages("TestFiles/TESTBank1Wav.pak", "TestFiles/16_bit_simple.wav", "TestFiles/16_bit_reaper.wav");
 }
 
-TEST(Package, Encode2DiffertBitRate)
+TEST(PackageWav, Encode2DiffertBitRate)
 {
     TestPackages("TestFiles/TESTBank1Wav.pak", "TestFiles/8_bit_simple.wav", "TestFiles/16_bit_simple.wav");
 }
 
-TEST(Package, Encode10)
+TEST(PackageWav, Encode10)
 {
     TestPackages("TestFiles/TESTBank1Wav.pak", "TestFiles/16_bit_reaper.wav",
                  "TestFiles/16_bit_reaper.wav", "TestFiles/16_bit_reaper.wav",
@@ -129,6 +164,20 @@ TEST(Package, Encode10)
                  "TestFiles/16_bit_reaper.wav");
 }
 #endif //I_SOUND_ENGINE_PACKAGEMODULE_H
+
+TEST(PackageOpus, Encode144100)
+{
+    TestOpusPackages("TestFiles/TESTBankOpus1.pck", "TestFiles/level.wav");
+}
+TEST(PackageOpus, Encode148000)
+{
+    TestOpusPackages("TestFiles/TESTBankOpus1.pck", "TestFiles/credits.wav");
+}
+
+TEST(PackageOpus, EncodeBoth)
+{
+    TestOpusPackages("TestFiles/TESTBankOpus2.pck", "TestFiles/credits.wav", "TestFiles/level.wav");
+}
 
 static void Encode100WavExpectedFilePack(benchmark::State& state)
 {
@@ -150,12 +199,13 @@ static void Encode100WavBurtalFilePack(benchmark::State& state)
     for(auto _ : state)
     {
         PackageEncoder encoder;
-        WavFile wav("TestFiles/16_bit_reaper.wav");
+        WavFile wav("TestFiles/level.wav");
         for(int i = 0; i < 100; ++i)
         {
             encoder.AddFile(wav, i, PCM);
         }
-        encoder.WritePackage("TestFiles/TEST100WavFilesBurtal.pak");}
+        encoder.WritePackage("TestFiles/TEST100WavFilesBurtal.pak");
+    }
 }
 BENCHMARK(Encode100WavBurtalFilePack);
 
@@ -182,7 +232,7 @@ BENCHMARK(Read1_100FilePackExpected);
 static void Read1_100FilePackBrutal(benchmark::State& state)
 {
     PackageEncoder encoder;
-    WavFile wav("TestFiles/16_bit_reaper.wav");
+    WavFile wav("TestFiles/level.wav");
     for(int i = 0; i < 100; ++i)
     {
         encoder.AddFile(wav, i, PCM);
@@ -220,3 +270,38 @@ static void EncodeCredits48000ToOpus(benchmark::State& state)
     }
 }
 BENCHMARK(EncodeCredits48000ToOpus);
+
+static void Encode100Opus(benchmark::State& state)
+{
+    for(auto _ : state)
+    {
+        PackageEncoder encoder;
+        WavFile wav("TestFiles/level.wav");
+        for(int i = 0; i < 100; ++i)
+        {
+            encoder.AddFile(wav, i, Opus);
+        }
+        encoder.WritePackage("TestFiles/TEST100WavFilesOpusBurtal.pak");
+    }
+}
+BENCHMARK(Encode100Opus);
+
+static void Read1_100OpusPack(benchmark::State& state)
+{
+
+    PackageEncoder encoder;
+    WavFile wav("TestFiles/level.wav");
+    for(int i = 0; i < 100; ++i)
+    {
+        encoder.AddFile(wav, i, Opus);
+    }
+    encoder.WritePackage("TestFiles/TEST100WavFilesOpusBurtal.pak");
+    for (auto _ : state)
+    {
+        std::unordered_map<uint64_t, SoundData> ParsedData;
+        char* dataPointer;
+        PackageDecoder::DecodePackage(ParsedData, &dataPointer, "TestFiles/TEST100WavFilesOpusBurtal.pak");
+        //delete [] dataPointer;
+    }
+}
+BENCHMARK(Read1_100OpusPack);

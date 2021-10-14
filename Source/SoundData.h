@@ -17,11 +17,11 @@ enum Encoding
 
 struct SoundData
 {
-    uint32_t sampleCount;
     char* data;
-    uint8_t channels;
+    uint32_t sampleCount;
     uint32_t sampleRate;
     Encoding audioType;
+    uint8_t channels;
 };
 
 #endif //I_SOUND_ENGINE_SOUNDDATA_H

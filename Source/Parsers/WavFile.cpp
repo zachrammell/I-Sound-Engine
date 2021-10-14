@@ -217,19 +217,19 @@ int WavFile::GetDataAsOpus(char* buffer)
         {
             if(writeSize > 255) // Buffer doesnt fit in a char
             {
-                *(buffer + offset) = 255;
+                *reinterpret_cast<unsigned char*>(buffer + offset) = static_cast<unsigned char>(255);
                 writeSize -= 255;
             }
             else if (writeSize == 255) // fits exactly into one char
             {
-                *(buffer + offset) = 255;
+                *reinterpret_cast<unsigned char*>(buffer + offset) = static_cast<unsigned char>(255);
                 ++offset;
                 *(buffer + offset) = 0;
                 writeSize = 0;
             }
-            else // size fits in a char
+            else // size fits in an unsigned char
             {
-                *(buffer + offset) = writeSize;
+                *reinterpret_cast<unsigned char*>(buffer + offset) = static_cast<unsigned char>(writeSize);
                 writeSize = 0;
             }
             ++offset;

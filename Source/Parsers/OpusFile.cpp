@@ -164,3 +164,21 @@ int OpusFile::WriteOggStoBuffer(char* buffer, OggS header)
 
     return offset;
 }
+
+int OpusFile::GetSegementSize(char *buffer, int& packetSize)
+{
+    int tableIndex = 26; // Magic number to segmentation table
+    int opusPacketSize = *reinterpret_cast<unsigned char*>((buffer + tableIndex));
+    ++tableIndex;
+    int readSize = opusPacketSize;
+
+    // size == 255 means that there are more bytes need to create this segment
+    while(readSize == 255)
+    {
+        readSize = *reinterpret_cast<unsigned char*>((buffer + tableIndex));
+        opusPacketSize += readSize;
+        ++tableIndex;
+    }
+    packetSize = opusPacketSize;
+    return tableIndex;
+}

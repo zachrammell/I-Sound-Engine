@@ -46,7 +46,7 @@ TEST(WavFiles, Complex_32_bit_read)
     //readWaveFile("TestFiles/32_bit_reaper.wav");
 }
 
-void encodeWaveToOggThenWav(char* inFile, char* outFileOgg, char*  outFileWav);
+void encodeWaveToOggThenWav(const char* inFile, const char* outFileOgg, const char*  outFileWav);
 
 TEST(OpusFiles, EncodeCredits48000)
 {
@@ -87,7 +87,7 @@ static void Read100WavFilesBrutal(benchmark::State& state)
         char* bufferOfBuffers[100];
         for(int i = 0; i < 100; ++i)
         {
-            WavFile wavFile("TestFiles/16_bit_reaper.wav");
+            WavFile wavFile("TestFiles/level.wav");
             bufferOfBuffers[i] = new char[(wavFile.GetDataSize() / 2) * sizeof(float)];
             wavFile.GetDataAsFloat(reinterpret_cast<float*>(bufferOfBuffers[i]));
         }

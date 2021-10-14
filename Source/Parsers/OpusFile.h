@@ -54,6 +54,7 @@ public:
 
     static void WriteToFile(char* opusData, int size, OpusHeaderChunk header, char* fileName);
     static int WriteOggStoBuffer(char* buffer, OggS header);
+    static int GetSegementSize(char* buffer, int& packetSize);
 private:
     ErrorNum errorState;
     unsigned dataPosition;

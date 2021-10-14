@@ -32,7 +32,7 @@ struct CommentHeader
     unsigned numOfUsercomments;   // User comments string length
     unsigned* userCommentsLength; // Length of each user comment
     char** userComments;          // User Comments
-};
+    };
 
 // size of 27
 struct OggS

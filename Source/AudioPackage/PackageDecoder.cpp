@@ -6,8 +6,12 @@
 #include "../Parsers/WavHeader.h"
 #include "PackageDecoder.h"
 #include <sys/mman.h>
+#include "../Parsers/OpusHeader.h"
+#include "../Parsers/OpusFile.h"
 
 #include <fcntl.h>
+
+constexpr int samplesPerPacket = 960;
 
 namespace PackageDecoder
 {
@@ -37,19 +41,39 @@ namespace PackageDecoder
 
     int ParseOpus(int id, std::unordered_map<uint64_t, SoundData>& table, char* data)
     {
-        
+        OpusHeaderChunk header;
+        header = *reinterpret_cast<OpusHeaderChunk*>(data);
+        int offset = 19; // Magic opus header size as size of gives 20 due to padding
+
+        SoundData soundData;
+        soundData.data = data + offset;
+        soundData.sampleCount = 0;
+        soundData.audioType = Opus;
+        soundData.channels = header.channels;
+        soundData.sampleRate = header.sampleRate;
+
+        while(*(data + offset + 0) == 'O' &&
+              *(data + offset + 1) == 'g' &&
+              *(data + offset + 2) == 'g' &&
+              *(data + offset + 3) == 'S')
+        {
+            int packetSize;
+            offset += OpusFile::GetSegementSize(data + offset, packetSize);
+            offset += packetSize;
+            soundData.sampleCount += samplesPerPacket;
+        }
+        table[id] = soundData;
+        return offset;
     }
 
     int GetDataStartAndLength(std::unordered_map<uint64_t, SoundData>& table, char* data, int size)
     {
-        int dataLength = 0;
-        for(int offset = 0; offset < size;)
+        int offset = 0;
+        while(offset < size)
         {
             // Read the id
             uint32_t id = *reinterpret_cast<const uint32_t*>(data + offset);
             offset += sizeof(uint32_t);
-
-            offset += ParseWav(id, table, data + offset);
 
             if(*(data + offset + 0) == 'R' &&
                *(data + offset + 1) == 'I' &&
@@ -58,10 +82,19 @@ namespace PackageDecoder
             {
                 offset += ParseWav(id, table, data + offset);
             }
-
-
+            else if(*(data + offset + 0) == 'O' &&
+                    *(data + offset + 1) == 'p' &&
+                    *(data + offset + 2) == 'u' &&
+                    *(data + offset + 3) == 's' &&
+                    *(data + offset + 4) == 'H' &&
+                    *(data + offset + 5) == 'e' &&
+                    *(data + offset + 6) == 'a' &&
+                    *(data + offset + 7) == 'd')
+            {
+                offset += ParseOpus(id, table, data + offset);
+            }
         }
-        return dataLength;
+        return offset;
     }
 
     void Convert16Bit(int size, short* in, float* out)
@@ -147,5 +180,4 @@ namespace PackageDecoder
         //delete [] fileBuffer;
         return ErrorNum::NoErrors;
     }
-
 }

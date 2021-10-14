@@ -20,6 +20,9 @@ namespace PackageDecoder
      *         Anything else there was errors with decoding
      */
     ErrorNum DecodePackage(std::unordered_map<uint64_t, SoundData>& lookUpTable, char** data, std::string path);
+
+    ErrorNum ReleasePackage(std::unordered_map<uint64_t, SoundData>& lookUpTable, char** data);
+
 };
 
 #endif //I_SOUND_ENGINE_PACKAGEDECODER_H
