@@ -7,9 +7,9 @@
 
 #include "gtest/gtest.h"
 
-#include "PackageEncoder.h"
-#include "PackageDecoder.h"
-#include "WavFile.h"
+#include "AudioPackage/PackageEncoder.h"
+#include "AudioPackage/PackageDecoder.h"
+#include "AudioFormats/WavFile.h"
 #include "benchmark/benchmark.h"
 
 void addFile(std::vector<WavFile>&)

@@ -4,3 +4,6 @@
 /Source/Parsers/ctest/32_bit_reaper.wav
 /Source/Parsers/ctest/8_bit_simple.wav
 /Source/Parsers/ctest/16_bit_simple.wav
+
+.vs/
+out/

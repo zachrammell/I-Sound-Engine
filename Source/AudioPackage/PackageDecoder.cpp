@@ -3,11 +3,19 @@
 //
 
 #include <fstream>
-#include "../Parsers/WavHeader.h"
+#include "AudioFormats/WavHeader.h"
 #include "PackageDecoder.h"
-#include <sys/mman.h>
-#include "../Parsers/OpusHeader.h"
-#include "../Parsers/OpusFile.h"
+
+#include "AudioFormats/OpusHeader.h"
+#include "AudioFormats/OpusFile.h"
+
+#if defined(OS_Windows)
+  #define WIN32_LEAN_AND_MEAN
+  #define NOMINMAX
+  #include <windows.h>
+#elif defined(OS_Linux)
+  #include <sys/mman.h>
+#endif
 
 #include <fcntl.h>
 
@@ -177,7 +185,6 @@ namespace PackageDecoder
 
         //munmap(fileBuffer,fileSize);
 
-        //delete [] fileBuffer;
         return ErrorNum::NoErrors;
     }
 }
