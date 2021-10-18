@@ -194,7 +194,7 @@ static void Encode100WavExpectedFilePack(benchmark::State& state)
         encoder.WritePackage("TestFiles/TEST100WavFilesExpected.pak");
     }
 }
-//BENCHMARK(Encode100WavExpectedFilePack);
+BENCHMARK(Encode100WavExpectedFilePack);
 
 static void Encode100WavBrutalFilePack(benchmark::State& state)
 {
@@ -209,7 +209,7 @@ static void Encode100WavBrutalFilePack(benchmark::State& state)
         encoder.WritePackage("TestFiles/TEST100WavFilesBrutal.pak");
     }
 }
-//BENCHMARK(Encode100WavBrutalFilePack);
+BENCHMARK(Encode100WavBrutalFilePack);
 
 static void Read1_100FilePackExpected(benchmark::State& state)
 {
@@ -270,7 +270,7 @@ static void EncodeLevel44100ToOpus(benchmark::State& state)
         file.GetDataAsOpus(buffer);
     }
 }
-//BENCHMARK(EncodeLevel44100ToOpus);
+BENCHMARK(EncodeLevel44100ToOpus);
 
 static void EncodeCredits48000ToOpus(benchmark::State& state)
 {
@@ -281,7 +281,7 @@ static void EncodeCredits48000ToOpus(benchmark::State& state)
         file.GetDataAsOpus(buffer);
     }
 }
-//BENCHMARK(EncodeCredits48000ToOpus);
+BENCHMARK(EncodeCredits48000ToOpus);
 
 static void Encode100Opus(benchmark::State& state)
 {
@@ -296,7 +296,7 @@ static void Encode100Opus(benchmark::State& state)
         encoder.WritePackage("TestFiles/TEST100WavFilesOpusBrutal.pak");
     }
 }
-//BENCHMARK(Encode100Opus);
+BENCHMARK(Encode100Opus);
 
 static void Read1_100OpusPack(benchmark::State& state)
 {
