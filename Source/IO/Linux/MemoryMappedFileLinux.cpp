@@ -34,7 +34,7 @@ MemoryMappedFile::MemoryMappedFile(char const* filepath)
 
 MemoryMappedFile::~MemoryMappedFile()
 {
-  munmap(reinterpret_cast<void*>(data), size);
+  munmap((void*)data, size);
 }
 
 }
