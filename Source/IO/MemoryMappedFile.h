@@ -6,6 +6,14 @@
 namespace IO
 {
 
+/*!
+ * \brief A file that is read as if it is a contiguous region of memory.
+ * To use it, simply construct it with a filepath, then read from the
+ * region of memory beginning at Data(). There will be Size() bytes of
+ * memory there. This file cannot currently be written to.
+ * Upon destruction, the memory region is invalidated.
+ * Do not store pointers to the data if they may outlive the file object.
+ */
 class MemoryMappedFile
 {
 public:
