@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
+#include <fcntl.h>
 
 #include "IO/IOUtility.h"
 #include <cassert>
@@ -33,7 +34,7 @@ MemoryMappedFile::MemoryMappedFile(char const* filepath)
 
 MemoryMappedFile::~MemoryMappedFile()
 {
-  munmap(data, size);
+  munmap(reinterpret_cast<void*>(data), size);
 }
 
 }

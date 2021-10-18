@@ -7,3 +7,5 @@
 
 .vs/
 out/
+CMakeSettings.json
+Testing/TestFiles/*.pak
